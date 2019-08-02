@@ -1,0 +1,257 @@
+<?php
+
+/**
+ * Implements: hook_menu().
+ *
+ * Module configuration
+ *   https://api.drupal.org/api/drupal/modules%21system%21system.api.php/function/hook_menu/7
+ */
+function eatlas_ncanimate2_menu() {
+	$items = array();
+
+	// Overview
+	// List all NcAnimate 2 product blocks
+	$items['admin/config/eatlas/eatlas_ncanimate2'] = array(
+		'title' => 'NcAnimate 2 product settings',
+		'description' => 'eAtlas NcAnimate 2 product module settings',
+		'page callback' => '_eatlas_ncanimate2_overview',
+		'access arguments' => array('access administration pages'),
+		'file' => 'eatlas_ncanimate2.admin.inc'
+	);
+
+	// Create a new NcAnimate 2 product block
+	$items['admin/config/eatlas/eatlas_ncanimate2/create'] = array(
+		'title callback' => '_eatlas_ncanimate2_title',
+		'title arguments' => array(NULL, 4),
+		'description' => 'Create a new NcAnimate 2 product block',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('_eatlas_ncanimate2_create'),
+		'access arguments' => array('access administration pages'),
+		'file' => 'eatlas_ncanimate2.admin.inc'
+	);
+
+	// Edit a NcAnimate 2 product block
+	$items['admin/config/eatlas/eatlas_ncanimate2/%/edit'] = array(
+		'title callback' => '_eatlas_ncanimate2_title',
+		'title arguments' => array(4, 5),
+		'description' => 'Edit a NcAnimate 2 product block settings',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('_eatlas_ncanimate2_edit', 4),
+		'access arguments' => array('access administration pages'),
+		'file' => 'eatlas_ncanimate2.admin.inc'
+	);
+
+	// Delete a NcAnimate 2 product block
+	$items['admin/config/eatlas/eatlas_ncanimate2/%/delete'] = array(
+		'title callback' => '_eatlas_ncanimate2_title',
+		'title arguments' => array(4, 5),
+		'description' => 'Delete a NcAnimate 2 product block',
+		'page callback' => 'drupal_get_form',
+		'page arguments' => array('_eatlas_ncanimate2_delete', 4),
+		'access arguments' => array('access administration pages'),
+		'file' => 'eatlas_ncanimate2.admin.inc'
+	);
+
+	return $items;
+}
+
+/**
+ * Implements: hook_block_info().
+ */
+function eatlas_ncanimate2_block_info() {
+	$blocks = array();
+
+	$blocks_info = eatlas_ncanimate2_block_load_all();
+
+	foreach($blocks_info as $block_info) {
+		$blocks['eatlas_ncanimate2_' . $block_info->bid] = array(
+			'info' => t('eAtlas NcAnimate 2 product') . ': ' . check_plain($block_info->name),
+			'cache' => DRUPAL_NO_CACHE,
+		);
+	}
+
+	return $blocks;
+}
+
+/**
+ * Implements: hook_block_view().
+ */
+function eatlas_ncanimate2_block_view($delta = '') {
+	$block = array();
+
+	if (eatlas_commons_starts_with($delta, 'eatlas_ncanimate2_')) {
+		$bid = intval(substr($delta, strlen('eatlas_ncanimate2_')));
+
+		// Load eAtlas NcAnimate 2 product info
+		$block_info = eatlas_ncanimate2_block_load($bid);
+		if ($block_info !== NULL) {
+			$module_path = drupal_get_path('module', 'eatlas_ncanimate2');
+
+			drupal_add_js('sites/all/libraries/momentjs/moment.min.js');
+			drupal_add_js($module_path . '/js/EAtlasNcAnimate2Widget.js');
+			drupal_add_js($module_path . '/js/EAtlasNcAnimate2Map.js');
+			drupal_add_js($module_path . '/js/eatlas_ncanimate2_load_videos.js');
+
+			$serviceUrl = check_plain($block_info->serviceurl);
+			$productId = check_plain($block_info->productid);
+			$mapUrl = check_plain($block_info->mapurl);
+			$mapWidth = check_plain($block_info->mapwidth);
+			$mapHeight = check_plain($block_info->mapheight);
+
+			$media_container =
+				'<div class="message-container"><span class="text">Loading...</span></div>' .
+
+				'<div class="image-container" style="text-align: center; display: none;">' .
+					'<img src="" />' .
+				'</div>' .
+
+				'<div class="video-container" style="text-align: center; display: none;">' .
+					'<video width="1300" height="600" controls>' .
+						'<source class="video_mp4" src="" type="video/mp4" />' .
+						'<div class="no-video-support-message"><span class="text">Your browser does not support the video tag.</span></div>' .
+					'</video>' .
+				'</div>';
+
+			// The block do not need a subject (title)
+			// $block['subject'] = t('NcAnimate 2 block');
+			$block['content'] =
+				'<div class="eatlas_ncanimate2_block" serviceurl="' . $serviceUrl . '" productid="' . $productId . '">' .
+					'<div class="tabs">' .
+						'<span class="label">Time step:</span>' .
+						'<ul></ul>' .
+					'</div>' .
+
+					$media_container .
+
+					'<div class="downloads" style="display: none;">' .
+						'<span class="label">Download</span>' .
+						'<ul>' .
+							'<li class="mp4"><a href="">mp4</a></li>' .
+							'<li class="wmv"><a href="">wmv</a></li>' .
+							'<li class="png"><a href="">png</a></li>' .
+							'<li class="svg"><a href="">svg</a></li>' .
+							'<li class="pdf"><a href="">pdf</a></li>' .
+						'</ul>' .
+					'</div>' .
+
+					'<div class="controls">' .
+						'<div class="regions">' .
+							'<div class="regions-container">' .
+								'<canvas class="regionCanvas" mapurl="' . $mapUrl . '" mapwidth="' . $mapWidth . '" mapheight="' . $mapHeight . '"></canvas>' .
+								'<ul class="regionList"></ul>' .
+							'</div>' .
+						'</div>' .
+						'<div class="elevation" style="display: none;">' .
+							'<label for="depth_bid_' . $bid . '">Elevation: </label>' .
+							'<select id="depth_bid_' . $bid . '"></select>' .
+						'</div>' .
+						'<div class="calendar">' .
+							'<table class="date-selector">' .
+								'<tr class="year-selector">' .
+									'<th class="year_previous text-selection-disabled"><a>&lt;</a></th>' .
+									'<th class="year"><a>----</a></th>' .
+									'<th class="year_next text-selection-disabled"><a>&gt;</a></th>' .
+								'</tr>' .
+								'<tr>' .
+									'<td class="month_1"><a>Jan</a></td>' .
+									'<td class="month_2"><a>Feb</a></td>' .
+									'<td class="month_3"><a>Mar</a></td>' .
+								'</tr>' .
+								'<tr>' .
+									'<td class="month_4"><a>Apr</a></td>' .
+									'<td class="month_5"><a>May</a></td>' .
+									'<td class="month_6"><a>Jun</a></td>' .
+								'</tr>' .
+								'<tr>' .
+									'<td class="month_7"><a>Jul</a></td>' .
+									'<td class="month_8"><a>Aug</a></td>' .
+									'<td class="month_9"><a>Sep</a></td>' .
+								'</tr>' .
+								'<tr>' .
+									'<td class="month_10"><a>Oct</a></td>' .
+									'<td class="month_11"><a>Nov</a></td>' .
+									'<td class="month_12"><a>Dec</a></td>' .
+								'</tr>' .
+							'</table>' .
+						'</div>' .
+					'</div>' .
+				'</div>' . "\n";
+		}
+	}
+
+	return $block;
+}
+
+/**
+ * API function
+ */
+function eatlas_ncanimate2_block_load($bid) {
+	if ($bid === NULL) {
+		return NULL;
+	}
+
+	// DB Select using the Drupal objects
+	// https://api.drupal.org/api/drupal/includes!database!database.inc/function/db_select/7
+	// NOTE: Join do not return a query!
+	//     https://api.drupal.org/api/drupal/includes%21database%21select.inc/function/SelectQuery%3A%3Ajoin/7
+
+	$query = db_select('eatlas_ncanimate2', 's')
+		->fields('s')
+		->condition('s.bid', $bid, '=');
+	$result = $query->execute();
+
+	return $result->fetch();
+}
+
+/**
+ * API function
+ */
+function eatlas_ncanimate2_block_load_all() {
+	$query = db_select('eatlas_ncanimate2', 's')
+		->fields('s');
+	$result = $query->execute();
+
+	return $result->fetchAll();
+}
+
+/**
+ * API function
+ */
+function eatlas_ncanimate2_block_save($block) {
+	// Transform the block object as an Array to be sent to the DB.
+	$block_fields = (array)$block;
+
+	if (isset($block_fields['bid'])) {
+		// Edit
+		$bid = $block_fields['bid'];
+
+		// BID is used in the "WHERE" clause, not in the values.
+		unset($block_fields['bid']);
+
+		db_update('eatlas_ncanimate2')->fields($block_fields)->condition('bid', $bid)->execute();
+	} else {
+		// Create
+		// https://api.drupal.org/api/drupal/includes%21database%21database.inc/function/db_insert/7
+		db_insert('eatlas_ncanimate2')->fields($block_fields)->execute();
+	}
+}
+
+/**
+ * API function
+ */
+function eatlas_ncanimate2_block_delete($bid) {
+	if ($bid !== NULL) {
+		// https://api.drupal.org/api/drupal/includes%21database%21database.inc/function/db_delete/7
+
+		// Delete the block
+		db_delete('block')
+			->condition('module', 'eatlas_ncanimate2')
+			->condition('delta', 'eatlas_ncanimate2_' . $bid)
+			->execute();
+
+		// Delete the entry NcAnimate 2 entry
+		db_delete('eatlas_ncanimate2')->condition('bid', $bid)->execute();
+	}
+}
+
+?>

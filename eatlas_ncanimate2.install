@@ -1,0 +1,95 @@
+<?php
+
+/**
+ * Implements: hook_schema().
+ *
+ * Define the table used for video selector settings.
+ *
+ * Schema API:
+ *   https://api.drupal.org/api/drupal/includes%21database%21schema.inc/group/schemaapi/7
+ * Data types:
+ *   https://www.drupal.org/node/159605
+ */
+function eatlas_ncanimate2_schema() {
+	$schema['eatlas_ncanimate2'] = array(
+		'description' => 'The eAtlas NcAnimate 2 product configuration table.',
+		'fields' => array(
+			'bid' => array(
+				'description' => 'The primary identifier for a NcAnimate 2 product block (auto-increment ID).',
+				'type' => 'serial',
+				'unsigned' => TRUE,
+				'not null' => TRUE
+			),
+			'name' => array(
+				'description' => 'The NcAnimate 2 product name (use for the block name).',
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => TRUE
+			),
+			// serviceUrl = "http://data.aims.ereefs.org.au/ncanimate/catalogue.php" <== TODO
+			'serviceurl' => array(
+				'description' => 'The URL of the service used to query the list of medias.',
+				'type' => 'varchar',
+				'length' => 1024,
+				'not null' => TRUE
+			),
+			// productId = "maps/monthly/temp-wind-salt-current"
+			'productid' => array(
+				'description' => 'The server side product path.',
+				'type' => 'varchar',
+				'length' => 255,
+				'not null' => TRUE
+			),
+
+			// mapUrl = "http://maps.eatlas.org.au/maps/ea/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=ea%3AGBR_GBRMPA_GBR-features,ea%3AGBR_e-Atlas-GBRMPA_GBRMP-bounds_Ocean-bounds,ea%3AGBR_NERP-TE-13-1_eAtlas_NRM-Regions-GBRMP-2012&STYLES=GBR-features_Outlook,Polygon_Outline-Red,GBR_NRM-Regions-GBRMP_Mainland-border&SRS=EPSG%3A4326&WIDTH=${WIDTH}&HEIGHT=${HEIGHT}&BBOX=${WEST},${SOUTH},${EAST},${NORTH}"
+			'mapurl' => array(
+				'description' => 'The URL of the background image of the map widget, used to navigation between regions.',
+				'type' => 'varchar',
+				'length' => 2048
+			),
+			'mapwidth' => array(
+				'description' => 'The width of the map widget, in pixel.',
+				'type' => 'int',
+				'unsigned' => TRUE
+			),
+			'mapheight' => array(
+				'description' => 'The height of the map widget, in pixel.',
+				'type' => 'int',
+				'unsigned' => TRUE
+			)
+		),
+		'primary key' => array('bid')
+	);
+
+	return $schema;
+}
+
+/**
+ * Implements: hook_uninstall().
+ *
+ * Remove every blocks created by this module
+ */
+function eatlas_ncanimate2_uninstall() {
+	db_delete('block')->condition('module', 'eatlas_ncanimate2')->execute();
+}
+
+/**
+ * Updates
+ * Implements: hook_update_N
+ *   https://api.drupal.org/api/drupal/modules%21system%21system.api.php/function/hook_update_N/7
+ *
+ * N = 7X00
+ *   7 = Drupal core 7.
+ *   X = Module major version.
+ *   00 = Sequential number, for all the updates on that major version.
+ *
+ * Comments for each updates functions are used by Drupal as update notes.
+ * $sandbox is used with long updates (to manage the progress bar)
+ *
+ * Developper note:
+ *   To rerun an update, set the Update status back to the previous update (or 0 to rerun all updates)
+ *   UPDATE system SET schema_version=0 WHERE name='eatlas_branding';
+ *     See: http://drupal.stackexchange.com/questions/42204/reseting-the-hook-update-n-status-of-a-module#42207
+ */
+
+?>

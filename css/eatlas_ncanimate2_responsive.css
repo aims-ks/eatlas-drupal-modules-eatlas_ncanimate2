@@ -1,0 +1,29 @@
+@media screen and (max-width: 900px) {
+	/* Fix controls layout */
+	.eatlas_ncanimate2_block .controls {
+		display: block;
+	}
+
+	.eatlas_ncanimate2_block .controls .regions,
+	.eatlas_ncanimate2_block .controls .elevation,
+	.eatlas_ncanimate2_block .controls .calendar {
+		display: block;
+		width: auto;
+	}
+
+	.eatlas_ncanimate2_block .controls .elevation {
+		text-align: left;
+	}
+
+	.eatlas_ncanimate2_block table.date-selector {
+		margin-left: 0;
+	}
+
+
+	/* Tabs */
+
+	.eatlas_ncanimate2_block .tabs ul li a {
+		width: 100px;
+	}
+
+}
