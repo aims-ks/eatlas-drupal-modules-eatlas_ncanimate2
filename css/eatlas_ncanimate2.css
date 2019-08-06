@@ -122,6 +122,9 @@
 .eatlas_ncanimate2_block .downloads ul li.wmv {
 	background-color: #006666;
 }
+.eatlas_ncanimate2_block .downloads ul li.zip {
+	background-color: #CC0000;
+}
 .eatlas_ncanimate2_block .downloads ul li.svg {
 	background-color: #666600;
 }

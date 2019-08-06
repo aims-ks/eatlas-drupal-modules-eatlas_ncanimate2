@@ -44,7 +44,7 @@ function _eatlas_ncanimate2_edit($form, &$form_state, $bid) {
 		'#title' => t('Service URL'),
 		'#description' => t('The URL of the NcAnimate 2 product service.') . '<br/>' .
 			t('Example') . ': ' .
-			'http://data.aims.ereefs.org.au/ncanimate/catalogue.php', // <=== TODO
+			'https://api.test.aims.ereefs.org.au/metadata/NCANIMATE_PRODUCT/${productid}',
 		'#default_value' => $block && property_exists($block, 'serviceurl') ? $block->serviceurl : '',
 		'#required' => TRUE
 	);

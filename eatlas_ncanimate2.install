@@ -26,7 +26,7 @@ function eatlas_ncanimate2_schema() {
 				'length' => 255,
 				'not null' => TRUE
 			),
-			// serviceUrl = "http://data.aims.ereefs.org.au/ncanimate/catalogue.php" <== TODO
+			// serviceUrl = "https://api.test.aims.ereefs.org.au/metadata/NCANIMATE_PRODUCT/${productid}"
 			'serviceurl' => array(
 				'description' => 'The URL of the service used to query the list of medias.',
 				'type' => 'varchar',

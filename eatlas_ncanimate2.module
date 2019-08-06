@@ -128,6 +128,7 @@ function eatlas_ncanimate2_block_view($delta = '') {
 						'<ul>' .
 							'<li class="mp4"><a href="">mp4</a></li>' .
 							'<li class="wmv"><a href="">wmv</a></li>' .
+							'<li class="zip"><a href="">zip</a></li>' .
 							'<li class="png"><a href="">png</a></li>' .
 							'<li class="svg"><a href="">svg</a></li>' .
 							'<li class="pdf"><a href="">pdf</a></li>' .

@@ -254,6 +254,7 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 	this.selectMedia(framePeriod, elevation, region, year, month);
 
 	if (media_metadata != null) {
+		var lastModified = media_metadata["lastModified"];
 		if ("outputFiles" in media_metadata) {
 			var outputFiles = media_metadata['outputFiles'];
 			if (outputFiles != null) {
@@ -269,10 +270,10 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 				});
 
 				if ("MP4" in videos_metadata) {
-					var videoUrl = videos_metadata["MP4"]["fileURI"];
+					var videoUrl = videos_metadata["MP4"]["fileURI"] + "?t=" + lastModified;
 					var videoPreview = null;
 					if ("preview" in media_metadata) {
-						videoPreview = media_metadata["preview"];
+						videoPreview = media_metadata["preview"] + "?t=" + lastModified;
 					}
 
 					var videoSource = this.videoContainerVideo.find('.video_mp4');
@@ -346,7 +347,7 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 					this.videoContainerVideo[0].load();
 
 				} else if ("PNG" in images_metadata) {
-					var imageUrl = images_metadata["PNG"]["fileURI"];
+					var imageUrl = images_metadata["PNG"]["fileURI"] + "?t=" + lastModified;
 
 					var width = images_metadata["png"]["width"];
 					var height = images_metadata["png"]["height"];
@@ -938,31 +939,19 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
 	// NOTE: Objects in javascript should be considered as HashMaps.
 	var keys = [];
 
-	if (media_metadata != null && media_metadata["base_url"]) {
-		var base_url = media_metadata["base_url"];
+	var lastModified = 0;
+	if (media_metadata != null) {
+		lastModified = media_metadata["lastModified"];
+		if ("outputFiles" in media_metadata) {
+			var outputFiles = media_metadata['outputFiles'];
 
-		var parseDownload = function(key, value) {
-			if (value["filename"]) {
-				var filename = value["filename"];
-				var url = base_url + "/" + filename;
-				var title = filename;
-				if (value["width"] && value["height"]) {
-					title += ' [' + value["width"] + 'x' + value["height"] + ']';
-				}
-				keys.push(key);
-				downloads[key] = {
-					url: url,
-					file: filename,
-					title: title
-				};
+			if (outputFiles != null) {
+				jQuery.each(outputFiles, function(outputFileID, outputFile) {
+					var key = outputFile['filetype'].toLowerCase();
+					keys.push(key);
+					downloads[key] = outputFile;
+				});
 			}
-		};
-
-		if (media_metadata["videos"]) {
-			jQuery.each(media_metadata["videos"], parseDownload);
-		}
-		if (media_metadata["images"]) {
-			jQuery.each(media_metadata["images"], parseDownload);
 		}
 	}
 
@@ -974,7 +963,14 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
 		var that = this;
 		jQuery.each(keys, function(index, key) {
 			var value = downloads[key];
-			that.downloadContainerList.append('<li class="'+key+'"><a href="'+value.url+'" title="'+value.title+'" download="'+value.file+'">'+key+'</a></li>');
+			var url = value["fileURI"];
+			var filename = url.substring(url.lastIndexOf('/')+1);
+			url += "?t=" + lastModified;
+			var title = filename;
+			if (value["width"] && value["height"]) {
+				title += ' [' + value["width"] + ' x ' + value["height"] + ']';
+			}
+			that.downloadContainerList.append('<li class="'+key+'"><a href="'+url+'" title="'+title+'" download="'+filename+'">'+key+'</a></li>');
 		});
 
 		// Show the downloads
