@@ -215,37 +215,45 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 	var media_metadata = null;
 	var periodType = "unknown";
 
-	if (framePeriod !== null && elevation !== null && region !== null && year !== null) {
+	if (framePeriod !== null && elevation !== null && region !== null) {
 
 		if ((framePeriod in this.media_map) &&
 				(elevation in this.media_map[framePeriod]) &&
-				(region in this.media_map[framePeriod][elevation]) &&
-				(year in this.media_map[framePeriod][elevation][region])) {
+				(region in this.media_map[framePeriod][elevation])) {
 
-			if (("metadata" in this.media_map[framePeriod][elevation][region][year]) &&
-					this.media_map[framePeriod][elevation][region][year]["metadata"] !== null) {
+			if (("metadata" in this.media_map[framePeriod][elevation][region]) &&
+					this.media_map[framePeriod][elevation][region]["metadata"] !== null) {
 
-				// Selected a yearly media
-				periodType = "year";
-				media_metadata = this.media_map[framePeriod][elevation][region][year]["metadata"]; // TODO framePeriod!!!
+				// Selected "all time" media
+				periodType = "all";
+				media_metadata = this.media_map[framePeriod][elevation][region]["metadata"];
 
-			} else {
-				// If month is null (or not found in the map), find the first month for that year.
-				if (month === null || !(month in this.media_map[framePeriod][elevation][region][year])) {
-					for (var month in this.media_map[framePeriod][elevation][region][year]) {
-						if (this.media_map[framePeriod][elevation][region][year].hasOwnProperty(month)) {
-							break;
+			} else if (year != null && year in this.media_map[framePeriod][elevation][region]) {
+				if (("metadata" in this.media_map[framePeriod][elevation][region][year]) &&
+						this.media_map[framePeriod][elevation][region][year]["metadata"] !== null) {
+
+					// Selected a yearly media
+					periodType = "year";
+					media_metadata = this.media_map[framePeriod][elevation][region][year]["metadata"]; // TODO framePeriod!!!
+
+				} else {
+					// If month is null (or not found in the map), find the first month for that year.
+					if (month === null || !(month in this.media_map[framePeriod][elevation][region][year])) {
+						for (month in this.media_map[framePeriod][elevation][region][year]) {
+							if (this.media_map[framePeriod][elevation][region][year].hasOwnProperty(month)) {
+								break;
+							}
 						}
 					}
-				}
 
-				if ((month in this.media_map[framePeriod][elevation][region][year]) &&
-					("metadata" in this.media_map[framePeriod][elevation][region][year][month]) &&
-						this.media_map[framePeriod][elevation][region][year][month]["metadata"] !== null) {
+					if ((month in this.media_map[framePeriod][elevation][region][year]) &&
+						("metadata" in this.media_map[framePeriod][elevation][region][year][month]) &&
+							this.media_map[framePeriod][elevation][region][year][month]["metadata"] !== null) {
 
-					// Selected a monthly media
-					periodType = "month";
-					media_metadata = this.media_map[framePeriod][elevation][region][year][month]["metadata"];
+						// Selected a monthly media
+						periodType = "month";
+						media_metadata = this.media_map[framePeriod][elevation][region][year][month]["metadata"];
+					}
 				}
 			}
 		}
@@ -349,8 +357,8 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 				} else if ("PNG" in images_metadata) {
 					var imageUrl = images_metadata["PNG"]["fileURI"] + "?t=" + lastModified;
 
-					var width = images_metadata["png"]["width"];
-					var height = images_metadata["png"]["height"];
+					var width = images_metadata["PNG"]["width"];
+					var height = images_metadata["PNG"]["height"];
 					if (width && height) {
 						if (height > EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT) {
 							width = Math.round(width * EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT / height);
@@ -424,14 +432,14 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 			all_years.sort(eatlas_ncanimate2_numeric_sort_asc);
 			for (var i=all_years.length-1; i>=0 && alt_year===null; i--) {
 				var _alt_year = all_years[i];
-				if (_alt_year in this.media_map[framePeriod][elevation][region]) {
-
+				if (_alt_year !== "metadata" && _alt_year in this.media_map[framePeriod][elevation][region]) {
 					// Try to find a monthly media for "_alt_year"
 					var all_months = Object.keys(this.media_map[framePeriod][elevation][region][_alt_year]);
 					all_months.sort(eatlas_ncanimate2_numeric_sort_asc);
 					for (var j=all_months.length-1; j>=0 && alt_year===null; j--) {
 						var _alt_month = all_months[j];
-						if ((_alt_month in this.media_map[framePeriod][elevation][region][_alt_year]) &&
+						if (_alt_month !== "metadata" &&
+								(_alt_month in this.media_map[framePeriod][elevation][region][_alt_year]) &&
 								("metadata" in this.media_map[framePeriod][elevation][region][_alt_year][_alt_month]) &&
 								this.media_map[framePeriod][elevation][region][_alt_year][_alt_month]["metadata"] !== null) {
 
@@ -453,13 +461,19 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 					}
 				}
 			}
+
+			// Try to find "all time" media
+			if (("metadata" in this.media_map[framePeriod][elevation][region]) &&
+					this.media_map[framePeriod][elevation][region]["metadata"] !== null) {
+
+				media_metadata = this.media_map[framePeriod][elevation][region]["metadata"];
+
+				alt_year = null;
+				alt_month = null;
+			}
 		}
 
-		if (alt_year !== null) {
-			this.loadMedia(framePeriod, elevation, region, alt_year, alt_month)
-		} else {
-			this.showMessage("Media not found");
-		}
+		this.loadMedia(framePeriod, elevation, region, alt_year, alt_month);
 	}
 
 	this.setTabsHref();
@@ -504,8 +518,7 @@ EAtlasNcAnimate2Widget.prototype.selectMedia = function(framePeriod, elevation, 
 EAtlasNcAnimate2Widget.prototype.redrawCalendar = function() {
 	if (this.current_framePeriod !== null &&
 			this.current_elevation !== null &&
-			this.current_region != null &&
-			this.selector_year !== null) {
+			this.current_region != null) {
 
 		// Fix classes in the video selector
 		var year = this.selector_year;
@@ -518,7 +531,9 @@ EAtlasNcAnimate2Widget.prototype.redrawCalendar = function() {
 		var nextYearLink = nextYearCell.find('a');
 		var yearCell = yearSelector.find('.year');
 		var yearLink = yearCell.find('a');
-		yearLink.html(year);
+
+		// Set calendar year
+		yearLink.html(year == null ? "----" : year);
 
 		// Remove selected class
 		dateSelector.find('td').removeClass('selected');
@@ -544,7 +559,8 @@ EAtlasNcAnimate2Widget.prototype.redrawCalendar = function() {
 		}
 
 		// Add the "onClick" event and the "selectable" CSS class on the year arrows.
-		if (this.media_map !== null &&
+		if (year !== null &&
+				this.media_map !== null &&
 				(this.current_framePeriod in this.media_map) &&
 				(this.current_elevation in this.media_map[this.current_framePeriod]) &&
 				(this.current_region in this.media_map[this.current_framePeriod][this.current_elevation]) &&
@@ -724,8 +740,21 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
 				// NOTE: mediaID is just it's index in the JSONArray
 				jQuery.each(data, function(mediaID, mediaMetadata) {
 					var dateRange = mediaMetadata['dateRange'];
-					var startDateStr = dateRange['startDate'];
-					var endDateStr = dateRange['endDate'];
+					var startDateStr = null;
+					var endDateStr = null;
+					var startDate = null;
+					var endDate = null;
+					if (dateRange != null) {
+						startDateStr = dateRange['startDate'];
+						if (startDateStr != null) {
+							startDate = that.parseDate(startDateStr);
+						}
+
+						endDateStr = dateRange['endDate'];
+						if (endDateStr != null) {
+							endDate = that.parseDate(endDateStr);
+						}
+					}
 
 					var videoTimeIncrement = mediaMetadata['videoTimeIncrement'];
 					var mapTimeIncrement = mediaMetadata['mapTimeIncrement'];
@@ -740,57 +769,69 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
 						mediaType = 'images';
 					}
 
-					var startDate = that.parseDate(startDateStr);
-					var endDate = that.parseDate(endDateStr);
 
-					if (startDate != null && endDate != null) {
+					var startYear = null;
+					var startMonth = null;
+					if (startDate != null) {
 						// Month is 0 indexed [0 - 11]. Add +1 to get [1 - 12].
-						var startYear = startDate.year();
-						var startMonth = startDate.month() + 1;
+						startYear = startDate.year();
+						startMonth = startDate.month() + 1;
+					}
 
-						var endYear = endDate.year();
-						var endMonth = endDate.month() + 1;
+					var endYear = null;
+					var endMonth = null;
+					if (endDate != null) {
+						// Month is 0 indexed [0 - 11]. Add +1 to get [1 - 12].
+						endYear = endDate.year();
+						endMonth = endDate.month() + 1;
+					}
 
-						// Default values for product which doesn't define elevation or region.
-						// I.E. If a product doesn't define the "elevation" variable, its elevation will be set to "na"
-						var framePeriod = 'na';
-						var elevation = 'na';
-						if ('properties' in mediaMetadata) {
-							if ('framePeriod' in mediaMetadata['properties']) {
-								framePeriod = mediaMetadata['properties']['framePeriod'];
-							}
-							if ('targetHeight' in mediaMetadata['properties']) {
-								elevation = mediaMetadata['properties']['targetHeight'];
-							}
+					// Default values for product which doesn't define elevation or region.
+					// I.E. If a product doesn't define the "elevation" variable, its elevation will be set to "na"
+					var framePeriod = 'na';
+					var elevation = 'na';
+					if ('properties' in mediaMetadata) {
+						if ('framePeriod' in mediaMetadata['properties']) {
+							framePeriod = mediaMetadata['properties']['framePeriod'];
 						}
-
-						var region = mediaMetadata['region'];
-						var regionId = region['id'];
-
-						if (!regions[regionId]) {
-							regions[regionId] = region;
+						if ('targetHeight' in mediaMetadata['properties']) {
+							elevation = mediaMetadata['properties']['targetHeight'];
 						}
+					}
 
-						if (!(framePeriod in that.media_map)) {
-							that.media_map[framePeriod] = {};
+					var region = mediaMetadata['region'];
+					var regionId = region['id'];
+
+					if (!regions[regionId]) {
+						regions[regionId] = region;
+					}
+
+					if (!(framePeriod in that.media_map)) {
+						that.media_map[framePeriod] = {};
+					}
+
+					if (!(framePeriod in framePeriodSettings)) {
+						framePeriods.push(framePeriod);
+						framePeriodSettings[framePeriod] = {
+							'type': mediaType
+						};
+					}
+
+
+
+					if (!(elevation in that.media_map[framePeriod])) {
+						elevations.push(elevation);
+						that.media_map[framePeriod][elevation] = {};
+					}
+					if (!(regionId in that.media_map[framePeriod][elevation])) {
+						that.media_map[framePeriod][elevation][regionId] = {};
+					}
+
+					if (startYear == null) {
+						if (periodType === "ETERNITY") {
+							that.media_map[framePeriod][elevation][regionId]["metadata"] = mediaMetadata;
 						}
-
-						if (!(framePeriod in framePeriodSettings)) {
-							framePeriods.push(framePeriod);
-							framePeriodSettings[framePeriod] = {
-								'type': mediaType
-							};
-						}
-
-
-
-						if (!(elevation in that.media_map[framePeriod])) {
-							elevations.push(elevation);
-							that.media_map[framePeriod][elevation] = {};
-						}
-						if (!(regionId in that.media_map[framePeriod][elevation])) {
-							that.media_map[framePeriod][elevation][regionId] = {};
-						}
+					} else {
 						if (!(startYear in that.media_map[framePeriod][elevation][regionId])) {
 							that.media_map[framePeriod][elevation][regionId][startYear] = {};
 						}
@@ -804,9 +845,6 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
 
 							that.media_map[framePeriod][elevation][regionId][startYear][startMonth]["metadata"] = mediaMetadata;
 						}
-
-					} else {
-						this.warning("Incomplete period: '" + startDateStr + "' to '" + endDateStr + "'.");
 					}
 				});
 
