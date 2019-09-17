@@ -9,5 +9,4 @@ creator = Gael Lafond
 ;   This variable is an array, one cell per element. Use "\n" for new lines.
 ;   Those properties are used with release_notes and tags.
 ;   See: https://www.drupal.org/documentation/releases/types
-Bug fixes[] = Fix support for maps.
-Bug fixes[] = Fix support for "all time" products.
+New features[] = Added production branch.
