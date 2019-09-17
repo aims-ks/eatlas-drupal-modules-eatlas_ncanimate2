@@ -9,4 +9,5 @@ creator = Gael Lafond
 ;   This variable is an array, one cell per element. Use "\n" for new lines.
 ;   Those properties are used with release_notes and tags.
 ;   See: https://www.drupal.org/documentation/releases/types
-New features[] = Added support for NcAnimate 2.
+Bug fixes[] = Fix support for maps.
+Bug fixes[] = Fix support for "all time" products.
