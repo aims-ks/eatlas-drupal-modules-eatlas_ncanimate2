@@ -209,11 +209,13 @@ EAtlasNcAnimate2Map.prototype.loadRegionCache = function() {
             var reprojectedBBox = this.reproject(this.regionCatalogue[regionId]['bbox']);
             if (reprojectedBBox !== null) {
                 var regionLabel = this.regionCatalogue[regionId]['label'];
+                var regionScale = this.regionCatalogue[regionId]['scale'] || -1;
                 if (!regionLabel) {
                     regionLabel = regionId;
                 }
                 this.regionCache[regionId] = {
                     'label': regionLabel,
+                    'scale': regionScale,
                     'x': reprojectedBBox.west,
                     'y': reprojectedBBox.north,
                     'width': reprojectedBBox.east - reprojectedBBox.west,
@@ -245,15 +247,23 @@ EAtlasNcAnimate2Map.prototype.populateHTMLRegionList = function() {
             var region1 = that.regionCache[id1],
                 region2 = that.regionCache[id2];
 
+            var scale1 = region1['scale'] || -1;
+            var scale2 = region2['scale'] || -1;
+            var scaleDiff = scale1 - scale2;
+
+            if (scaleDiff !== 0) {
+                return scaleDiff;
+            }
+
             // Place the North most first
             var yCmp = region1['y'] - region2['y'];
-            if (yCmp != 0) {
+            if (yCmp !== 0) {
                 return yCmp;
             }
 
             // If they are on the same parallel, return the West most first
             var xCmp = region1['x'] - region2['x'];
-            if (xCmp != 0) {
+            if (xCmp !== 0) {
                 return xCmp;
             }
 
@@ -263,12 +273,20 @@ EAtlasNcAnimate2Map.prototype.populateHTMLRegionList = function() {
 
         // Create the bullet list
         this.htmlRegionList.empty();
+        var lastRegionScale = null;
         for (var i=0; i<geographicallyOrderedRegions.length; i++) {
             var regionId = geographicallyOrderedRegions[i];
+            var region = this.regionCache[regionId];
+
+            if (region['scale'] !== lastRegionScale) {
+                var label = (region['scale'] === -1) ? 'Legacy regions' : 'Scale: ' + region['scale'];
+                this.htmlRegionList.append(jQuery('<li class="region-scale-label">' + label + '</li>'));
+            }
+
             this.htmlRegionList.append(
                 jQuery(regionId === this.selectedRegion ? '<li class="selected"></li>' : '<li></li>').append(
                     // NOTE: The anchor is to actually have a link (for keyboard navigation) and the value of the anchor is to create a pretty URL in the browser status when doing a mouse over.
-                    jQuery('<a class="' + regionId + '" href="#' + eatlas_ncanimate2_craft_anchor({"region": regionId}) + '">' + this.regionCache[regionId]['label'] + '</a>')
+                    jQuery('<a class="' + regionId + '" href="#' + eatlas_ncanimate2_craft_anchor({"region": regionId}) + '">' + region['label'] + '</a>')
                         // MouseEnter / MouseLeave are triggered with the mouse
                         // NOTE: We manually call focus / blur to trigger the respective event (avoid code duplication)
                         .mouseenter(function() { jQuery(this).focus(); } )
@@ -296,6 +314,8 @@ EAtlasNcAnimate2Map.prototype.populateHTMLRegionList = function() {
                             })
                 )
             );
+
+            lastRegionScale = region['scale'];
         }
     }
 };

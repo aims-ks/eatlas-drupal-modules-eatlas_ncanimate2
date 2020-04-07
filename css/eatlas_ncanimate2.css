@@ -56,6 +56,13 @@
     background-color: #CCCCFF;
 }
 
+.eatlas_ncanimate2_block ul.regionList .region-scale-label {
+    list-style-type: none;
+    margin-top: 0.5em;
+    margin-left: -1em;
+    font-weight: bold;
+}
+
 .eatlas_ncanimate2_block .message-container,
 .eatlas_ncanimate2_block .no-video-support-message {
     width: 1300px;
