@@ -1,235 +1,235 @@
 .eatlas_ncanimate2_block a:focus {
-	/* TODO: Add a "focus" background colour to the "theme" for accessibility - choose a better colour */
-	/*
-	background: #CCCCFF;
-	*/
+    /* TODO: Add a "focus" background colour to the "theme" for accessibility - choose a better colour */
+    /*
+    background: #CCCCFF;
+    */
 
-	/* Photoshop style highlight - for development purpose ONLY! */
-	/*
-	border: 2px solid transparent;
-	border-image: url(data:image/gif;base64,R0lGODlhCAAIAJAAAAAAAP///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQECgD/ACwAAAAACAAIAAACD4SDYZB6udpiaMJYsXuoAAAh+QQECgD/ACwAAAAACAAIAAACDYQRGadrzVRMB9FZ5SwAIfkEBAoA/wAsAAAAAAgACAAAAg8MDqGYaudeW9ChyOyltQAAIfkEBAoA/wAsAAAAAAgACAAAAg9MgGCXm+rQYtC0WGl9oQAAIfkEBAoA/wAsAAAAAAgACAAAAg+MgWCRernaYmjCWLF7qAAAIfkEBAoA/wAsAAAAAAgACAAAAg2MAwmna81UTAfRWeUsACH5BAQKAP8ALAAAAAAIAAgAAAIPRB6gmGrnXlvQocjspbUAACH5BAQKAP8ALAAAAAAIAAgAAAIPBIJhl5vq0GLQtFhpfaAAADs=) 1 round;
-	*/
+    /* Photoshop style highlight - for development purpose ONLY! */
+    /*
+    border: 2px solid transparent;
+    border-image: url(data:image/gif;base64,R0lGODlhCAAIAJAAAAAAAP///yH/C05FVFNDQVBFMi4wAwEAAAAh+QQECgD/ACwAAAAACAAIAAACD4SDYZB6udpiaMJYsXuoAAAh+QQECgD/ACwAAAAACAAIAAACDYQRGadrzVRMB9FZ5SwAIfkEBAoA/wAsAAAAAAgACAAAAg8MDqGYaudeW9ChyOyltQAAIfkEBAoA/wAsAAAAAAgACAAAAg9MgGCXm+rQYtC0WGl9oQAAIfkEBAoA/wAsAAAAAAgACAAAAg+MgWCRernaYmjCWLF7qAAAIfkEBAoA/wAsAAAAAAgACAAAAg2MAwmna81UTAfRWeUsACH5BAQKAP8ALAAAAAAIAAgAAAIPRB6gmGrnXlvQocjspbUAACH5BAQKAP8ALAAAAAAIAAgAAAIPBIJhl5vq0GLQtFhpfaAAADs=) 1 round;
+    */
 
-	text-decoration: underline !important;
+    text-decoration: underline !important;
 }
 
 
 .eatlas_ncanimate2_block {
-	overflow: auto;
+    overflow: auto;
 }
 
 .eatlas_ncanimate2_block .text-selection-disabled {
-	-ms-user-select: none; /* IE 10+ */
-	-moz-user-select: -moz-none;
-	-khtml-user-select: none;
-	-webkit-user-select: none;
-	user-select: none;
+    -ms-user-select: none; /* IE 10+ */
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .eatlas_ncanimate2_block table.date-selector {
-	margin-left: auto;
-	border-collapse: collapse;
+    margin-left: auto;
+    border-collapse: collapse;
 }
 
 .eatlas_ncanimate2_block table.date-selector th,
 .eatlas_ncanimate2_block table.date-selector td {
-	border: solid 1px #000000;
-	text-align: center;
-	padding: 5px 10px;
-	width: 3em;
+    border: solid 1px #000000;
+    text-align: center;
+    padding: 5px 10px;
+    width: 3em;
 }
 .eatlas_ncanimate2_block table.date-selector td,
 .eatlas_ncanimate2_block table.date-selector th {
-	color: #999999;
+    color: #999999;
 }
 .eatlas_ncanimate2_block table.date-selector .selectable {
-	color: #000000;
-	cursor: pointer;
+    color: #000000;
+    cursor: pointer;
 }
 .eatlas_ncanimate2_block table.date-selector .year {
-	color: #113a5f;
+    color: #113a5f;
 }
 
 .eatlas_ncanimate2_block ul.regionList .selected,
 .eatlas_ncanimate2_block table.date-selector .selected {
-	font-weight: bold;
-	background-color: #CCCCFF;
+    font-weight: bold;
+    background-color: #CCCCFF;
 }
 
 .eatlas_ncanimate2_block .message-container,
 .eatlas_ncanimate2_block .no-video-support-message {
-	width: 1300px;
-	height: 600px;
-	line-height: 600px;
+    width: 1300px;
+    height: 600px;
+    line-height: 600px;
 
-	background-color: #F8F8F8;
-	color: #CCCCCC;
+    background-color: #F8F8F8;
+    color: #CCCCCC;
 
-	text-align: center;
-	margin: auto;
+    text-align: center;
+    margin: auto;
 }
 
 .eatlas_ncanimate2_block .message-container .text,
 .eatlas_ncanimate2_block .no-video-support-message .text {
-	font-size: 2em;
-	font-weight: bold;
+    font-size: 2em;
+    font-weight: bold;
 
-	display: inline-block;
-	vertical-align: middle;
-	line-height: normal;
+    display: inline-block;
+    vertical-align: middle;
+    line-height: normal;
 }
 
 .eatlas_ncanimate2_block .video-container,
 .eatlas_ncanimate2_block .image-container {
-	/* Fix issue with container larger then expected */
-	line-height: 0;
+    /* Fix issue with container larger then expected */
+    line-height: 0;
 }
 
 .eatlas_ncanimate2_block .downloads {
-	margin-top: 1em;
-	text-align: right;
+    margin-top: 1em;
+    text-align: right;
 }
 .eatlas_ncanimate2_block .downloads span.label::after {
-	content: ":";
+    content: ":";
 }
 .eatlas_ncanimate2_block .downloads ul {
-	margin: 0;
-	padding: 0;
-	list-style-type: none;
-	display: inline-block;
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    display: inline-block;
 }
 .eatlas_ncanimate2_block .downloads ul li {
-	display: inline-block;
-	margin-left: 0.5em;
-	padding: 0 5px 1px 5px;
+    display: inline-block;
+    margin-left: 0.5em;
+    padding: 0 5px 1px 5px;
 
-	background-color: #777777;
+    background-color: #777777;
 
-	-webkit-border-radius: 3px;
-	-moz-border-radius: 3px;
-	border-radius: 3px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
 }
 .eatlas_ncanimate2_block .downloads ul li a {
-	text-decoration: none;
-	text-transform: uppercase;
-	font-weight: bold;
-	font-size: 0.8em;
-	color: #FFFFFF;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 0.8em;
+    color: #FFFFFF;
 }
 .eatlas_ncanimate2_block .downloads ul li.mp4 {
-	background-color: #0000FF;
+    background-color: #0000FF;
 }
 .eatlas_ncanimate2_block .downloads ul li.wmv {
-	background-color: #006666;
+    background-color: #006666;
 }
 .eatlas_ncanimate2_block .downloads ul li.zip {
-	background-color: #CC0000;
+    background-color: #CC0000;
 }
 .eatlas_ncanimate2_block .downloads ul li.svg {
-	background-color: #666600;
+    background-color: #666600;
 }
 .eatlas_ncanimate2_block .downloads ul li.png {
-	background-color: #006600;
+    background-color: #006600;
 }
 .eatlas_ncanimate2_block .downloads ul li.pdf {
-	background-color: #CC0000;
+    background-color: #CC0000;
 }
 
 /* NOTE: "display:flex" would be more appropriate, but IE don't support it. */
 .eatlas_ncanimate2_block .controls {
-	display: table;
-	width: 100%;
+    display: table;
+    width: 100%;
 }
 
 .eatlas_ncanimate2_block .controls .regions,
 .eatlas_ncanimate2_block .controls .elevation,
 .eatlas_ncanimate2_block .controls .calendar {
-	display: table-cell;
-	vertical-align: top;
+    display: table-cell;
+    vertical-align: top;
 
-	padding: 1em 0;
-	width: 33%;
+    padding: 1em 0;
+    width: 33%;
 }
 
 .eatlas_ncanimate2_block .controls .regions-container {
-	/* Align the region names next to the map */
-	display: table;
+    /* Align the region names next to the map */
+    display: table;
 }
 .eatlas_ncanimate2_block .controls .regions-container .regionCanvas,
 .eatlas_ncanimate2_block .controls .regions-container ul {
-	display: table-cell;
-	vertical-align: top;
+    display: table-cell;
+    vertical-align: top;
 }
 .eatlas_ncanimate2_block .controls .regions-container ul {
-	padding: 1em 0 0 1em;
+    padding: 1em 0 0 1em;
 }
 
 .eatlas_ncanimate2_block .controls .elevation {
-	text-align: center;
+    text-align: center;
 }
 
 .eatlas_ncanimate2_block .controls .elevation label {
-	display: inline;
+    display: inline;
 }
 
 
 /* Tabs */
 
 .eatlas_ncanimate2_block .tabs {
-	text-align: left;
-	background-color: #EEEEEE;
+    text-align: left;
+    background-color: #EEEEEE;
 }
 
 .eatlas_ncanimate2_block .tabs .label {
-	padding: 0 0.5em;
-	vertical-align: middle;
+    padding: 0 0.5em;
+    vertical-align: middle;
 }
 .eatlas_ncanimate2_block .tabs ul li .tabLabel {
-	vertical-align: middle;
+    vertical-align: middle;
 }
 
 .eatlas_ncanimate2_block .tabs ul {
-	display: inline-block;
-	list-style-type: none;
-	margin: 0;
-	padding: 3px 3px 0 3px;
+    display: inline-block;
+    list-style-type: none;
+    margin: 0;
+    padding: 3px 3px 0 3px;
 }
 
 .eatlas_ncanimate2_block .tabs ul li {
-	display: inline-block;
+    display: inline-block;
 }
 .eatlas_ncanimate2_block .tabs ul li:hover {
-	background-color: #DDDDDD;
+    background-color: #DDDDDD;
 }
 
 .eatlas_ncanimate2_block .tabs ul li a {
-	display: inline-block;
-	text-align: center;
-	width: 120px;
-	padding: 0.5em;
+    display: inline-block;
+    text-align: center;
+    width: 120px;
+    padding: 0.5em;
 }
 
 .eatlas_ncanimate2_block .tabs ul li .icon {
-	float: left;
-	display: block;
-	width: 23px;
-	height: 20px;
-	background-repeat: no-repeat;
-	background-position: center center;
-	background-size: 23px 20px;
-	opacity: 0.2;
+    float: left;
+    display: block;
+    width: 23px;
+    height: 20px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 23px 20px;
+    opacity: 0.2;
 }
 
 .eatlas_ncanimate2_block .tabs ul li.images .icon {
-	background-image: url('../img/icon-image.svg');
+    background-image: url('../img/icon-image.svg');
 }
 
 .eatlas_ncanimate2_block .tabs ul li.videos .icon {
-	background-image: url('../img/icon-video.svg');
+    background-image: url('../img/icon-video.svg');
 }
 
 .eatlas_ncanimate2_block .tabs ul li.active {
-	background-color: #FFFFFF;
+    background-color: #FFFFFF;
 }
 
 
@@ -237,7 +237,7 @@
 
 /* Add some space between "actions" (edit, delete) */
 .eatlas_ncanimate2_video-selector-spacer {
-	display: inline-block;
-	width: 2em;
+    display: inline-block;
+    width: 2em;
 }
 
