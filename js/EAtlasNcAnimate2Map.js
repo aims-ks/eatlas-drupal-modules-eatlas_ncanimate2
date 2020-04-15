@@ -274,16 +274,22 @@ EAtlasNcAnimate2Map.prototype.populateHTMLRegionList = function() {
         // Create the bullet list
         this.htmlRegionList.empty();
         var lastRegionScale = null;
+        var currentUl = null;
         for (var i=0; i<geographicallyOrderedRegions.length; i++) {
             var regionId = geographicallyOrderedRegions[i];
             var region = this.regionCache[regionId];
 
-            if (region['scale'] !== lastRegionScale) {
+            if (currentUl === null || region['scale'] !== lastRegionScale) {
+                var scaleGroup = jQuery('<div></div>')
+                this.htmlRegionList.append(scaleGroup);
+
                 var label = (region['scale'] === -1) ? 'Legacy regions' : 'Scale: ' + region['scale'];
-                this.htmlRegionList.append(jQuery('<li class="region-scale-label">' + label + '</li>'));
+                scaleGroup.append(jQuery('<div class="region-scale-label">' + label + '</div>'));
+                currentUl = jQuery('<ul></ul>');
+                scaleGroup.append(currentUl);
             }
 
-            this.htmlRegionList.append(
+            currentUl.append(
                 jQuery(regionId === this.selectedRegion ? '<li class="selected"></li>' : '<li></li>').append(
                     // NOTE: The anchor is to actually have a link (for keyboard navigation) and the value of the anchor is to create a pretty URL in the browser status when doing a mouse over.
                     jQuery('<a class="' + regionId + '" href="#' + eatlas_ncanimate2_craft_anchor({"region": regionId}) + '">' + region['label'] + '</a>')

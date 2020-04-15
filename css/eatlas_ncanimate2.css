@@ -50,17 +50,10 @@
     color: #113a5f;
 }
 
-.eatlas_ncanimate2_block ul.regionList .selected,
+.eatlas_ncanimate2_block .regionList .selected,
 .eatlas_ncanimate2_block table.date-selector .selected {
     font-weight: bold;
     background-color: #CCCCFF;
-}
-
-.eatlas_ncanimate2_block ul.regionList .region-scale-label {
-    list-style-type: none;
-    margin-top: 0.5em;
-    margin-left: -1em;
-    font-weight: bold;
 }
 
 .eatlas_ncanimate2_block .message-container,
@@ -159,16 +152,28 @@
 }
 
 .eatlas_ncanimate2_block .controls .regions-container {
-    /* Align the region names next to the map */
-    display: table;
+    /* Align the region names next to the map, if there is space for it */
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start; /* Align to the top */
 }
-.eatlas_ncanimate2_block .controls .regions-container .regionCanvas,
-.eatlas_ncanimate2_block .controls .regions-container ul {
-    display: table-cell;
-    vertical-align: top;
+
+.eatlas_ncanimate2_block .controls .regions-container .regionList .region-scale-label {
+    margin-top: 0.5em;
+    font-weight: bold;
 }
-.eatlas_ncanimate2_block .controls .regions-container ul {
-    padding: 1em 0 0 1em;
+
+.eatlas_ncanimate2_block .controls .regions-container .regionList {
+    max-height: 300px; /* Do not get taller than the map */
+
+    /* Display the "scale" groups from to to bottom, wrapping to the right if there is not enough space */
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+.eatlas_ncanimate2_block .controls .regions-container .regionList ul {
+    padding: 0 0 0 1em;
+    margin: 0.5em 1em 0.5em 0;
 }
 
 .eatlas_ncanimate2_block .controls .elevation {
