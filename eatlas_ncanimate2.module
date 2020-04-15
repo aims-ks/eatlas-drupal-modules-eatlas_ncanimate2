@@ -139,7 +139,7 @@ function eatlas_ncanimate2_block_view($delta = '') {
                         '<div class="regions">' .
                             '<div class="regions-container">' .
                                 '<canvas class="regionCanvas" mapurl="' . $mapUrl . '" mapwidth="' . $mapWidth . '" mapheight="' . $mapHeight . '"></canvas>' .
-                                '<ul class="regionList"></ul>' .
+                                '<div class="regionList"></div>' .
                             '</div>' .
                         '</div>' .
                         '<div class="elevation" style="display: none;">' .
