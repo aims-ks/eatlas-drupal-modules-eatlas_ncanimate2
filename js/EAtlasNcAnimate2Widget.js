@@ -1018,10 +1018,17 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
                 title += ' [' + value["width"] + ' x ' + value["height"] + ']';
             }
 
+            // Give a more descriptive label to the video frame download button.
+            // Issue [EREEFS-398]
+            var label = key;
+            if (key.toLowerCase() === 'zip') {
+                label = "video frames";
+            }
+
             // Add the file last modified to the URL to prevent the browser (or other part of the system)
             // from caching an old request response
             url += "?t=" + lastModified;
-            that.downloadContainerList.append('<li class="'+key+'"><a href="'+url+'" title="'+title+'" download="'+filename+'">'+key+'</a></li>');
+            that.downloadContainerList.append('<li class="'+key+'"><a href="'+url+'" title="'+title+'" download="'+filename+'">'+label+'</a></li>');
         });
 
         // Show the downloads
