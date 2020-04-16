@@ -1002,12 +1002,25 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
         jQuery.each(keys, function(index, key) {
             var value = downloads[key];
             var url = value["fileURI"];
-            var filename = url.substring(url.lastIndexOf('/')+1);
-            url += "?t=" + lastModified;
+
+            // Get the last part of the URL (the part after the last "/")
+            var lastSlashIndex = url.lastIndexOf('/');
+            var longFilename = lastSlashIndex >= 0 ? url.substring(lastSlashIndex + 1) : url;
+
+            // Attempt to remove unnecessary context (that Aaron added to every IDs in the system)
+            // to make the filename somewhat usable. Jira issue [EREEFS-400]
+            var lastDoubleUnderscoreIndex = longFilename.lastIndexOf("__");
+            var filename = lastDoubleUnderscoreIndex >= 0 ? longFilename.substring(lastDoubleUnderscoreIndex + 2) : longFilename;
+
+            // Craft a nice title (mouse over hint), displaying the file name and dimensions
             var title = filename;
             if (value["width"] && value["height"]) {
                 title += ' [' + value["width"] + ' x ' + value["height"] + ']';
             }
+
+            // Add the file last modified to the URL to prevent the browser (or other part of the system)
+            // from caching an old request response
+            url += "?t=" + lastModified;
             that.downloadContainerList.append('<li class="'+key+'"><a href="'+url+'" title="'+title+'" download="'+filename+'">'+key+'</a></li>');
         });
 
