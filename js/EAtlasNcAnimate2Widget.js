@@ -191,13 +191,18 @@ EAtlasNcAnimate2Widget.prototype.showVideoContainer = function(message) {
  * Load a video on the video player and adjust the month selector
  */
 EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, region, year, month) {
+    // If default region is null, that means there is no region, therefore no usable data...
+    if (this.default_region === null) {
+        return;
+    }
+
     if (framePeriod === undefined || framePeriod === null) {
         framePeriod = this.default_framePeriod;
     }
     if (elevation === undefined || elevation === null) {
         elevation = this.default_elevation;
     }
-    if (region === undefined || region === null) {
+    if (region === undefined || region === null || !this.regions.hasOwnProperty(region)) {
         region = this.default_region;
     }
     if (year === undefined) {
@@ -735,7 +740,7 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
                 var framePeriodSettings = {};
                 var elevations = [];
 
-                var regions = {};
+                that.regions = {};
 
                 // NOTE: mediaID is just it's index in the JSONArray
                 jQuery.each(data, function(mediaID, mediaMetadata) {
@@ -802,8 +807,8 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
                     var region = mediaMetadata['region'];
                     var regionId = region['id'];
 
-                    if (!regions[regionId]) {
-                        regions[regionId] = region;
+                    if (!that.regions[regionId]) {
+                        that.regions[regionId] = region;
                     }
 
                     if (!(framePeriod in that.media_map)) {
@@ -877,17 +882,52 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
 
                 that.default_elevation = elevations[0];
 
-                that.map_selector.load(regions);
-                that.default_region = "qld";
+                that.map_selector.load(that.regions);
 
-                anchorValues = eatlas_ncanimate2_get_anchor_values();
-                that.loadMedia(
-                        anchorValues["frame"],
-                        anchorValues["elevation"],
-                        anchorValues["region"],
-                        anchorValues["year"],
-                        anchorValues["month"]
-                );
+                // Determine what the default region should be
+                that.default_region = null;
+                if (that.regions) {
+                    const regionObjs = Object.values(that.regions)
+                    if (regionObjs && regionObjs.length > 0) {
+                        // Order regions by scale
+                        // If 2 regions have the same scale, order them by label
+                        regionObjs.sort(function(regionA, regionB){
+                            let scaleA = regionA.scale || null;
+                            let scaleB = regionB.scale || null;
+
+                            if (scaleA !== null && scaleB !== null) {
+                                let scaleDiff = scaleA - scaleB;
+                                if (scaleDiff !== 0) {
+                                    return scaleDiff;
+                                }
+                            }
+
+                            if (scaleA !== null) {
+                                return 1;
+                            }
+                            if (scaleB !== null) {
+                                return -1;
+                            }
+
+                            return regionA.label.localeCompare(regionB.label);
+                        });
+                        // Use the first region (after sorting) as default region
+                        const default_region_obj = regionObjs[0];
+
+                        // Only the ID is stored.
+                        // NOTE: This is used when there is no region in URL parameter, or the region in URL is wrong.
+                        that.default_region = default_region_obj.id;
+
+                        var anchorValues = eatlas_ncanimate2_get_anchor_values();
+                        that.loadMedia(
+                                anchorValues["frame"],
+                                anchorValues["elevation"],
+                                anchorValues["region"],
+                                anchorValues["year"],
+                                anchorValues["month"]
+                        );
+                    }
+                }
             }
         })(this),
 
