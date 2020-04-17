@@ -970,7 +970,8 @@ EAtlasNcAnimate2Widget.prototype.parseDate = function(dateStr) {
         return null;
     }
 
-    var date = moment(dateStr);
+    // Parse date without applying timezone offset
+    var date = moment.parseZone(dateStr);
     if (date.isValid()) {
         return date;
     }
