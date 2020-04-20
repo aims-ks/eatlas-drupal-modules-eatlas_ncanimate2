@@ -85,12 +85,22 @@
     line-height: 0;
 }
 
-.eatlas_ncanimate2_block .downloads {
+.eatlas_ncanimate2_block .playerTools {
+    display: flex;
+    justify-content: space-between;
     margin-top: 1em;
-    text-align: right;
 }
-.eatlas_ncanimate2_block .downloads span.label::after {
+
+.eatlas_ncanimate2_block .playerTools span.label::after {
     content: ":";
+}
+
+.eatlas_ncanimate2_block .navigation button {
+    margin: 0 0.5em;
+}
+
+.eatlas_ncanimate2_block .downloads {
+    text-align: right;
 }
 .eatlas_ncanimate2_block .downloads ul {
     margin: 0;
