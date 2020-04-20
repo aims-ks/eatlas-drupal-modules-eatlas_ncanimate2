@@ -123,16 +123,26 @@ function eatlas_ncanimate2_block_view($delta = '') {
 
                     $media_container .
 
-                    '<div class="downloads" style="display: none;">' .
-                        '<span class="label">Download</span>' .
-                        '<ul>' .
-                            '<li class="mp4"><a href="">mp4</a></li>' .
-                            '<li class="wmv"><a href="">wmv</a></li>' .
-                            '<li class="zip"><a href="">zip</a></li>' .
-                            '<li class="png"><a href="">png</a></li>' .
-                            '<li class="svg"><a href="">svg</a></li>' .
-                            '<li class="pdf"><a href="">pdf</a></li>' .
-                        '</ul>' .
+                    '<div class="playerTools">' .
+                        '<div class="navigationBlock">' .
+                            '<div class="navigation" style="display: none;">' .
+                                '<span class="label">Skip frames</span>' .
+                                '<button class="previousFrame">&lt;</button>' .
+                                '<button class="nextFrame">&gt;</button>' .
+                            '</div>' .
+                        '</div>' .
+
+                        '<div class="downloads" style="display: none;">' .
+                            '<span class="label">Download</span>' .
+                            '<ul>' .
+                                '<li class="mp4"><a href="">mp4</a></li>' .
+                                '<li class="wmv"><a href="">wmv</a></li>' .
+                                '<li class="zip"><a href="">zip</a></li>' .
+                                '<li class="png"><a href="">png</a></li>' .
+                                '<li class="svg"><a href="">svg</a></li>' .
+                                '<li class="pdf"><a href="">pdf</a></li>' .
+                            '</ul>' .
+                        '</div>' .
                     '</div>' .
 
                     '<div class="controls">' .

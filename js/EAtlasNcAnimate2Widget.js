@@ -68,12 +68,60 @@ function EAtlasNcAnimate2Widget(htmlBlockElement) {
     this.videoContainer = this.block.find('.video-container');
     this.videoContainerVideo = this.videoContainer.find('video');
 
+    this.videoContainerVideo.bind("pause", function(widget) {
+        return function(event) {
+            // Sync video player with JavaScript current time value.
+            widget.videoContainerVideo[0].currentTime = widget.getFrameHalfTime(widget.videoContainerVideo[0].currentTime);
+        };
+    }(this));
+
     this.elevationContainer = this.block.find('.elevation');
     this.elevationContainerSelect = this.elevationContainer.find('select');
+
+    this.navigation = this.block.find('.navigation');
+    this.previousFrameButton = this.navigation.find('.previousFrame');
+    this.previousFrameButton.click(function(widget) {
+        return function(event) {
+            widget.skipFrame(-1);
+        };
+    }(this));
+    this.nextFrameButton = this.navigation.find('.nextFrame');
+    this.nextFrameButton.click(function(widget) {
+        return function(event) {
+            widget.skipFrame(1);
+        };
+    }(this));
 
     this.downloadContainer = this.block.find('.downloads');
     this.downloadContainerList = this.downloadContainer.find('ul');
 }
+
+EAtlasNcAnimate2Widget.prototype.skipFrame = function(nbFrames) {
+    const videoFPS = this.video_metadata["fps"];
+    let newVideoTime = this.videoContainerVideo[0].currentTime + (nbFrames/videoFPS);
+    // No negative
+    newVideoTime = newVideoTime < 0 ? 0 : newVideoTime;
+    // Ceil to the 5th decimal point, to be sure it goes to the next frame instead of hovering between 2 frames
+    newVideoTime = this.getFrameHalfTime(newVideoTime);
+    this.videoContainerVideo[0].currentTime = newVideoTime;
+};
+
+/**
+ * Get the time of the middle of the frame in which videoTime is.
+ * Example:
+ *     Video frames: |-------|-------|-------|-------|-------|-------|---
+ *     Parameter videoTime:                ^
+ *     Return:                           ^
+ * This is used to be sure a seek will seek to the expected frame.
+ * It's to get around floating point error.
+ */
+EAtlasNcAnimate2Widget.prototype.getFrameHalfTime = function(videoTime) {
+    const videoFPS = this.video_metadata["fps"];
+    // Current frame number, first frame = 0
+    const videoFrameNumber = Math.floor(videoTime * videoFPS);
+
+    return (videoFrameNumber + 0.5) / videoFPS;
+};
 
 EAtlasNcAnimate2Widget.prototype.init = function() {
     this.initElevationSelector();
@@ -219,6 +267,7 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 
     var media_metadata = null;
     var periodType = "unknown";
+    this.navigation.hide();
 
     if (framePeriod !== null && elevation !== null && region !== null) {
 
@@ -267,6 +316,7 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
     this.selectMedia(framePeriod, elevation, region, year, month);
 
     if (media_metadata != null) {
+        this.media_metadata = media_metadata;
         var lastModified = media_metadata["lastModified"];
         if ("outputFiles" in media_metadata) {
             var outputFiles = media_metadata['outputFiles'];
@@ -283,6 +333,9 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
                 });
 
                 if ("MP4" in videos_metadata) {
+                    this.navigation.show();
+
+                    this.video_metadata = videos_metadata["MP4"];
                     var videoUrl = videos_metadata["MP4"]["fileURI"] + "?t=" + lastModified;
                     var videoPreview = null;
                     if ("preview" in media_metadata) {
@@ -1071,6 +1124,47 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
             url += "?t=" + lastModified;
             that.downloadContainerList.append('<li class="'+key+'"><a href="'+url+'" title="'+title+'" download="'+filename+'">'+label+'</a></li>');
         });
+
+        const frameLink = jQuery(`<a>Frame</a>`);
+        frameLink.click(function(widget) {
+            return function(event) {
+                // Map:
+                //     Key: Possible values found in JSON (returned by NcAnimate)
+                //     Value: Equivalence in Moment library
+                // https://momentjs.com/docs/#/manipulating/add/
+                const MOMENT_UNIT_MAP = {
+                    "SECOND": "seconds",
+                    "MINUTE": "minutes",
+                    "HOUR": "hours",
+                    "DAY": "days",
+                    "WEEK": "weeks",
+                    "MONTH": "months",
+                    "YEAR": "years"
+                };
+
+
+                const video = widget.videoContainerVideo;
+                const currentTime = video[0].currentTime;
+                const videoFPS = widget.video_metadata["fps"];
+                // Current frame number, first frame = 0
+                const currentFrameNumber = Math.floor(currentTime * videoFPS);
+
+                const frameTime = widget.media_metadata["frameTimeIncrement"];
+                const dateRange = widget.media_metadata["dateRange"];
+                const startDateStr = dateRange["startDate"];
+                const startDate = widget.parseDate(startDateStr);
+
+                const frameTimeIncrement = frameTime["increment"] * currentFrameNumber;
+                const frameTimeUnit = frameTime["unit"];
+                const momentFrameTimeUnit = MOMENT_UNIT_MAP[frameTimeUnit];
+                const frameDate = startDate.add(frameTimeIncrement, momentFrameTimeUnit);
+
+                alert("TODO\nSend a request to the server to get frame: " + frameDate.format());
+            }
+        }(this));
+        const frameLi = jQuery(`<li class="frame"></li>`);
+        frameLi.append(frameLink);
+        this.downloadContainerList.append(frameLi);
 
         // Show the downloads
         this.downloadContainer.show();
