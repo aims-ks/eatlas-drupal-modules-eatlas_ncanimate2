@@ -486,13 +486,13 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
                 (elevation in this.media_map[framePeriod]) &&
                 (region in this.media_map[framePeriod][elevation])) {
 
-            var all_years = Object.keys(this.media_map[framePeriod][elevation][region]);
+            var all_years = this.objectKeys(this.media_map[framePeriod][elevation][region]);
             all_years.sort(eatlas_ncanimate2_numeric_sort_asc);
             for (var i=all_years.length-1; i>=0 && alt_year===null; i--) {
                 var _alt_year = all_years[i];
                 if (_alt_year !== "metadata" && _alt_year in this.media_map[framePeriod][elevation][region]) {
                     // Try to find a monthly media for "_alt_year"
-                    var all_months = Object.keys(this.media_map[framePeriod][elevation][region][_alt_year]);
+                    var all_months = this.objectKeys(this.media_map[framePeriod][elevation][region][_alt_year]);
                     all_months.sort(eatlas_ncanimate2_numeric_sort_asc);
                     for (var j=all_months.length-1; j>=0 && alt_year===null; j--) {
                         var _alt_month = all_months[j];
@@ -626,7 +626,7 @@ EAtlasNcAnimate2Widget.prototype.redrawCalendar = function() {
 
             var video_region_map = this.media_map[this.current_framePeriod][this.current_elevation][this.current_region];
 
-            var years = Object.keys(video_region_map);
+            var years = this.objectKeys(video_region_map);
             years.sort(eatlas_ncanimate2_numeric_sort_asc);
 
             var yearIndex;
@@ -940,7 +940,7 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
                 // Determine what the default region should be
                 that.default_region = null;
                 if (that.regions) {
-                    const regionObjs = Object.values(that.regions)
+                    const regionObjs = that.objectValues(that.regions)
                     if (regionObjs && regionObjs.length > 0) {
                         // Order regions by scale
                         // If 2 regions have the same scale, order them by label
@@ -1125,7 +1125,7 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
             that.downloadContainerList.append('<li class="'+key+'"><a href="'+url+'" title="'+title+'" download="'+filename+'">'+label+'</a></li>');
         });
 
-        const frameLink = jQuery(`<a>Frame</a>`);
+        const frameLink = jQuery('<a>Frame</a>');
         frameLink.click(function(widget) {
             return function(event) {
                 // Map:
@@ -1162,7 +1162,7 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
                 alert("TODO\nSend a request to the server to get frame: " + frameDate.format());
             }
         }(this));
-        const frameLi = jQuery(`<li class="frame"></li>`);
+        const frameLi = jQuery('<li class="frame"></li>');
         frameLi.append(frameLink);
         this.downloadContainerList.append(frameLi);
 
@@ -1184,6 +1184,42 @@ EAtlasNcAnimate2Widget.prototype.warning = function(message) {
         // NOTE: Alert popups are annoying, but if you are using IE, you deserve it...
         alert(message);
     }
+};
+
+// Basic key extraction, because IE doesn't supports Object.keys()
+EAtlasNcAnimate2Widget.prototype.objectKeys = function(obj) {
+    if (Object && Object.hasOwnProperty('keys') && typeof(Object.keys) === 'function') {
+        return Object.keys(obj);
+    }
+
+    // For Internet Explorer...
+    var keys = [];
+
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            keys.push(key);
+        }
+    }
+
+    return keys;
+};
+
+// Basic value extraction, because IE doesn't supports Object.values()
+EAtlasNcAnimate2Widget.prototype.objectValues = function(obj) {
+    if (Object && Object.hasOwnProperty('values') && typeof(Object.values) === 'function') {
+        return Object.values(obj);
+    }
+
+    // For Internet Explorer...
+    var values = [];
+
+    for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            values.push(obj[key]);
+        }
+    }
+
+    return values;
 };
 
 (function ($) {

@@ -78,11 +78,15 @@ EAtlasNcAnimate2Map.prototype.loadMap = function() {
                 if (hoverRegion) {
                     let x = window.scrollX, y = window.scrollY;
                     that.htmlRegionList.find("a." + hoverRegion).focus();
+
                     // Reset the page scroll to prevent "focus" from scrolling the page
                     // when the focused element is out of view.
                     // This might not work with all browsers (*cough* internet explorer *cough*)
                     // but it should work with all modern browsers.
-                    window.scrollTo(x, y);
+                    // NOTE: IE do NOT support scrollX and scrollY.
+                    if (!isNaN(x) && !isNaN(y)) {
+                        window.scrollTo(x, y);
+                    }
                 } else {
                     that.htmlRegionList.find("a").focusout();
                 }
