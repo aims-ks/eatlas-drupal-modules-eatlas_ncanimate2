@@ -97,13 +97,18 @@ function EAtlasNcAnimate2Widget(htmlBlockElement) {
 }
 
 EAtlasNcAnimate2Widget.prototype.skipFrame = function(nbFrames) {
-    const videoFPS = this.video_metadata["fps"];
-    let newVideoTime = this.videoContainerVideo[0].currentTime + (nbFrames/videoFPS);
-    // No negative
-    newVideoTime = newVideoTime < 0 ? 0 : newVideoTime;
-    // Ceil to the 5th decimal point, to be sure it goes to the next frame instead of hovering between 2 frames
-    newVideoTime = this.getFrameHalfTime(newVideoTime);
-    this.videoContainerVideo[0].currentTime = newVideoTime;
+    if (this.videoContainerVideo && this.videoContainerVideo[0]) {
+        let videoEl = this.videoContainerVideo[0];
+        videoEl.pause();
+
+        const videoFPS = this.video_metadata["fps"];
+        let newVideoTime = videoEl.currentTime + (nbFrames/videoFPS);
+        // No negative
+        newVideoTime = newVideoTime < 0 ? 0 : newVideoTime;
+        // Ceil to the 5th decimal point, to be sure it goes to the next frame instead of hovering between 2 frames
+        newVideoTime = this.getFrameHalfTime(newVideoTime);
+        videoEl.currentTime = newVideoTime;
+    }
 };
 
 /**
