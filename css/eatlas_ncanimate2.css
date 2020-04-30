@@ -174,7 +174,9 @@
 }
 
 .eatlas_ncanimate2_block .controls .regions-container .regionList {
-    max-height: 300px; /* Do not get taller than the map */
+    /* Do not get taller than the map */
+    /* NOTE: Use height instead of max-height because IE do not support max-height very well... */
+    height: 320px;
 
     /* Display the "scale" groups from to to bottom, wrapping to the right if there is not enough space */
     display: flex;
