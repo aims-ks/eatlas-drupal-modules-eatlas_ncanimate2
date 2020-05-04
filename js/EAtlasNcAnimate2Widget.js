@@ -115,12 +115,9 @@ EAtlasNcAnimate2Widget.prototype.isMsEdge = function() {
 
 /**
  * Changing the video currentTime is as simple as setting a property...
- * unless some masochist user decide to give it a try with Internet Explorer
+ * unless some masochist user decide to give it a try with Internet Explorer or Ms Edge
  */
-EAtlasNcAnimate2Widget.prototype.setVideoCurrentTime = function(currentTime, attempts) {
-    // NOTE: Internet Explorer do NOT support default parameter value...
-    attempts = attempts || 0;
-
+EAtlasNcAnimate2Widget.prototype.setVideoCurrentTime = function(currentTime) {
     if (this.videoContainerVideo && this.videoContainerVideo[0]) {
         // NOTE: That's all we need to do... for all browsers but Internet Explorer
         this.videoContainerVideo[0].currentTime = currentTime;
@@ -130,29 +127,6 @@ EAtlasNcAnimate2Widget.prototype.setVideoCurrentTime = function(currentTime, att
         if (this.isMsEdge() || this.isInternetExplorer()) {
             this.videoContainerVideo[0].currentTime = 0;
             this.videoContainerVideo[0].currentTime = currentTime;
-        }
-
-        // Unfortunately, this is not good enough for Internet Explorer.
-        // You need to hit really hard repetitively with a big hammer until it gets it.
-        // NOTE: Using a limit of 10 attempts to avoid infinite loop.
-        //     If Internet Explorer still do not get it after 10 times,
-        //     just give up... It's a lost cause
-        // NOTE: (video.currentTime === currentTime) is unreliable
-        //     because of the video time crude rounding.
-        if (this.isInternetExplorer()) {
-            if (attempts < 10 && Math.abs(this.videoContainerVideo[0].currentTime - currentTime) > 0.00001) {
-                window.setTimeout(function(widget, currentTime, attempts) {
-                    return function() {
-                        // Check again before hitting harder, in case IE has gave up already
-                        if (Math.abs(widget.videoContainerVideo[0].currentTime - currentTime) > 0.00001) {
-                            // Insisting with the same value over and over is not going to do it.
-                            // We need to alternate between 2 values, otherwise Internet Explorer will just ignore us.
-                            widget.videoContainerVideo[0].currentTime = 0;
-                            widget.setVideoCurrentTime(currentTime, attempts+1);
-                        }
-                    };
-                }(this, currentTime, attempts), 10);
-            }
         }
     }
 };
