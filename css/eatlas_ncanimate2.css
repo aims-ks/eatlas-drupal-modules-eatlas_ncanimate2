@@ -151,52 +151,39 @@
 
 /* NOTE: "display:flex" would be more appropriate, but IE don't support it. */
 .eatlas_ncanimate2_block .controls {
-    display: table;
-    width: 100%;
-}
-
-.eatlas_ncanimate2_block .controls .regions,
-.eatlas_ncanimate2_block .controls .elevation,
-.eatlas_ncanimate2_block .controls .calendar {
-    display: table-cell;
-    vertical-align: top;
-
-    padding: 1em 0;
-    width: 33%;
-}
-
-.eatlas_ncanimate2_block .controls .regions-container {
-    /* Align the region names next to the map, if there is space for it */
     display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start; /* Align to the top */
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-top: 1em;
 }
 
-.eatlas_ncanimate2_block .controls .regions-container .regionList .region-scale-label {
+.eatlas_ncanimate2_block .controls .regionList {
+    flex-grow: 1;
+}
+.eatlas_ncanimate2_block .controls .regionList .regionScaleGroup {
+    float: left;
+    min-width: 120px;
+}
+
+.eatlas_ncanimate2_block .controls .regionList .region-scale-label {
     margin-top: 0.5em;
     font-weight: bold;
 }
 
-.eatlas_ncanimate2_block .controls .regions-container .regionList {
-    /* Do not get taller than the map */
-    /* NOTE: Use height instead of max-height because IE do not support max-height very well... */
-    height: 320px;
-
-    /* Display the "scale" groups from to to bottom, wrapping to the right if there is not enough space */
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
-}
-.eatlas_ncanimate2_block .controls .regions-container .regionList ul {
+.eatlas_ncanimate2_block .controls .regionList ul {
     padding: 0 0 0 1em;
     margin: 0.5em 1em 0.5em 0;
 }
 
-.eatlas_ncanimate2_block .controls .elevation {
+.eatlas_ncanimate2_block .controls .calendar {
+    clear: left;
+}
+
+.eatlas_ncanimate2_block .playerTools .elevation {
     text-align: center;
 }
 
-.eatlas_ncanimate2_block .controls .elevation label {
+.eatlas_ncanimate2_block .playerTools .elevation label {
     display: inline;
 }
 

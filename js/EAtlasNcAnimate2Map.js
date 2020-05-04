@@ -290,7 +290,7 @@ EAtlasNcAnimate2Map.prototype.populateHTMLRegionList = function() {
             var region = this.regionCache[regionId];
 
             if (currentUl === null || region['scale'] !== lastRegionScale) {
-                var scaleGroup = jQuery('<div></div>')
+                var scaleGroup = jQuery('<div class="regionScaleGroup"></div>')
                 this.htmlRegionList.append(scaleGroup);
 
                 var label = (region['scale'] === -1) ? 'Legacy regions' : 'Scale: ' + region['scale'];

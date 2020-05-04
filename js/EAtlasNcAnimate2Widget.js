@@ -123,7 +123,9 @@ EAtlasNcAnimate2Widget.prototype.setVideoCurrentTime = function(currentTime) {
         this.videoContainerVideo[0].currentTime = currentTime;
 
         // Unfortunately, this is not good enough for Internet Explorer and Edge.
-        // We need to insist a bit more
+        // We need to insist a bit more, going back and forth between 2 values...
+        // This make the UI less responsive, so we really only want to do it when
+        // necessary (only IE and Edge).
         if (this.isMsEdge() || this.isInternetExplorer()) {
             this.videoContainerVideo[0].currentTime = 0;
             this.videoContainerVideo[0].currentTime = currentTime;
