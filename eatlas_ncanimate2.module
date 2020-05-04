@@ -132,6 +132,11 @@ function eatlas_ncanimate2_block_view($delta = '') {
                             '</div>' .
                         '</div>' .
 
+                        '<div class="elevation" style="display: none;">' .
+                            '<label for="depth_bid_' . $bid . '">Elevation: </label>' .
+                            '<select id="depth_bid_' . $bid . '"></select>' .
+                        '</div>' .
+
                         '<div class="downloads" style="display: none;">' .
                             '<span class="label">Download</span>' .
                             '<ul>' .
@@ -146,16 +151,10 @@ function eatlas_ncanimate2_block_view($delta = '') {
                     '</div>' .
 
                     '<div class="controls">' .
-                        '<div class="regions">' .
-                            '<div class="regions-container">' .
-                                '<canvas class="regionCanvas" mapurl="' . $mapUrl . '" mapwidth="' . $mapWidth . '" mapheight="' . $mapHeight . '"></canvas>' .
-                                '<div class="regionList"></div>' .
-                            '</div>' .
-                        '</div>' .
-                        '<div class="elevation" style="display: none;">' .
-                            '<label for="depth_bid_' . $bid . '">Elevation: </label>' .
-                            '<select id="depth_bid_' . $bid . '"></select>' .
-                        '</div>' .
+                        '<canvas class="regionCanvas" mapurl="' . $mapUrl . '" mapwidth="' . $mapWidth . '" mapheight="' . $mapHeight . '"></canvas>' .
+
+                        '<div class="regionList"></div>' .
+
                         '<div class="calendar">' .
                             '<table class="date-selector">' .
                                 '<tr class="year-selector">' .

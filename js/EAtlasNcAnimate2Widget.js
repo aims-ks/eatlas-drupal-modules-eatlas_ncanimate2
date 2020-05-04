@@ -71,7 +71,16 @@ function EAtlasNcAnimate2Widget(htmlBlockElement) {
     this.videoContainerVideo.bind("pause", function(widget) {
         return function(event) {
             // Sync video player with JavaScript current time value.
-            widget.videoContainerVideo[0].currentTime = widget.fixVideoFrameTime(widget.videoContainerVideo[0].currentTime);
+            // When the video is paused, the currentTime property stop incrementing,
+            //     but sometime the video skip ahead a frame or two.
+            //     Setting the currentTime property fixes that issue.
+            //     Also, when the currentTime is set too close to the
+            //     timestamp between 2 frames, the rounding from the Math
+            //     may give a different frame than the one shown.
+            //     To avoid any issue, we set the video currentTime
+            //     right in the middle of 2 frames, which ensure the
+            //     reading will always be consistent with what the user sees.
+            widget.setVideoCurrentTime(widget.fixVideoFrameTime(widget.videoContainerVideo[0].currentTime));
         };
     }(this));
 
@@ -96,12 +105,37 @@ function EAtlasNcAnimate2Widget(htmlBlockElement) {
     this.downloadContainerList = this.downloadContainer.find('ul');
 }
 
-EAtlasNcAnimate2Widget.prototype.skipFrame = function(nbFrames) {
+EAtlasNcAnimate2Widget.prototype.isInternetExplorer = function() {
+    return navigator.userAgent.indexOf(" MSIE ") >= 0 || navigator.userAgent.indexOf(" Trident/") >= 0;
+};
+
+EAtlasNcAnimate2Widget.prototype.isMsEdge = function() {
+    return navigator.userAgent.indexOf(" Edge/") >= 0;
+};
+
+/**
+ * Changing the video currentTime is as simple as setting a property...
+ * unless some masochist user decide to give it a try with Internet Explorer or Ms Edge
+ */
+EAtlasNcAnimate2Widget.prototype.setVideoCurrentTime = function(currentTime) {
     if (this.videoContainerVideo && this.videoContainerVideo[0]) {
-        const videoEl = this.videoContainerVideo[0];
-        videoEl.currentTime = this.fixVideoFrameTime(this.getSkipFrame(nbFrames));
+        // NOTE: That's all we need to do... for all browsers but Internet Explorer
+        this.videoContainerVideo[0].currentTime = currentTime;
+
+        // Unfortunately, this is not good enough for Internet Explorer and Edge.
+        // We need to insist a bit more, going back and forth between 2 values...
+        // This make the UI less responsive, so we really only want to do it when
+        // necessary (only IE and Edge).
+        if (this.isMsEdge() || this.isInternetExplorer()) {
+            this.videoContainerVideo[0].currentTime = 0;
+            this.videoContainerVideo[0].currentTime = currentTime;
+        }
     }
-}
+};
+
+EAtlasNcAnimate2Widget.prototype.skipFrame = function(nbFrames) {
+    this.setVideoCurrentTime(this.fixVideoFrameTime(this.getSkipFrame(nbFrames)));
+};
 
 EAtlasNcAnimate2Widget.prototype.getSkipFrame = function(nbFrames) {
     if (this.videoContainerVideo && this.videoContainerVideo[0]) {
@@ -1165,8 +1199,8 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
                         "YEAR": "years"
                     };
 
-
                     const video = widget.videoContainerVideo;
+                    video[0].pause();
                     const currentTime = widget.fixVideoFrameTime(video[0].currentTime);
                     const videoFPS = widget.video_metadata["fps"];
                     // Current frame number, first frame = 0
@@ -1207,7 +1241,7 @@ EAtlasNcAnimate2Widget.prototype.downloadFrame = function(frameDate) {
     }
 
     let frameUrl = this.media_metadata["frameDirectoryUrl"];
-    if (!frameUrl.endsWith("/")) {
+    if (!this.endsWith(frameUrl, "/")) {
         frameUrl += "/";
     }
 
@@ -1244,7 +1278,7 @@ EAtlasNcAnimate2Widget.prototype.warning = function(message) {
     }
 };
 
-// Basic key extraction, because IE doesn't supports Object.keys()
+// Basic key extraction, because Internet Explorer doesn't supports Object.keys()
 EAtlasNcAnimate2Widget.prototype.objectKeys = function(obj) {
     if (Object && Object.hasOwnProperty('keys') && typeof(Object.keys) === 'function') {
         return Object.keys(obj);
@@ -1262,7 +1296,7 @@ EAtlasNcAnimate2Widget.prototype.objectKeys = function(obj) {
     return keys;
 };
 
-// Basic value extraction, because IE doesn't supports Object.values()
+// Basic value extraction, because Internet Explorer doesn't supports Object.values()
 EAtlasNcAnimate2Widget.prototype.objectValues = function(obj) {
     if (Object && Object.hasOwnProperty('values') && typeof(Object.values) === 'function') {
         return Object.values(obj);
@@ -1278,6 +1312,14 @@ EAtlasNcAnimate2Widget.prototype.objectValues = function(obj) {
     }
 
     return values;
+};
+
+// Yet another hack because of, you guessed it, Internet Explorer...
+EAtlasNcAnimate2Widget.prototype.endsWith = function(str, suffix) {
+    if (typeof(str.endsWith) === 'function') {
+        return str.endsWith(suffix);
+    }
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
 };
 
 (function ($) {
