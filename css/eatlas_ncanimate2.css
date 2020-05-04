@@ -125,6 +125,7 @@
     font-weight: bold;
     font-size: 0.8em;
     color: #FFFFFF;
+    cursor: pointer;
 }
 .eatlas_ncanimate2_block .downloads ul li.mp4 {
     background-color: #0000FF;
@@ -143,6 +144,9 @@
 }
 .eatlas_ncanimate2_block .downloads ul li.pdf {
     background-color: #CC0000;
+}
+.eatlas_ncanimate2_block .downloads ul li.frame {
+    background-color: #006600; /* Same colour as PNG, since it's a PNG file */
 }
 
 /* NOTE: "display:flex" would be more appropriate, but IE don't support it. */

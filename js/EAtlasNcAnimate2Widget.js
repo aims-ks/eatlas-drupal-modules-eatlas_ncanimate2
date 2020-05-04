@@ -71,7 +71,7 @@ function EAtlasNcAnimate2Widget(htmlBlockElement) {
     this.videoContainerVideo.bind("pause", function(widget) {
         return function(event) {
             // Sync video player with JavaScript current time value.
-            widget.videoContainerVideo[0].currentTime = widget.getFrameHalfTime(widget.videoContainerVideo[0].currentTime);
+            widget.videoContainerVideo[0].currentTime = widget.fixVideoFrameTime(widget.videoContainerVideo[0].currentTime);
         };
     }(this));
 
@@ -98,17 +98,21 @@ function EAtlasNcAnimate2Widget(htmlBlockElement) {
 
 EAtlasNcAnimate2Widget.prototype.skipFrame = function(nbFrames) {
     if (this.videoContainerVideo && this.videoContainerVideo[0]) {
-        let videoEl = this.videoContainerVideo[0];
+        const videoEl = this.videoContainerVideo[0];
+        videoEl.currentTime = this.fixVideoFrameTime(this.getSkipFrame(nbFrames));
+    }
+}
+
+EAtlasNcAnimate2Widget.prototype.getSkipFrame = function(nbFrames) {
+    if (this.videoContainerVideo && this.videoContainerVideo[0]) {
+        const videoEl = this.videoContainerVideo[0];
         videoEl.pause();
 
         const videoFPS = this.video_metadata["fps"];
-        let newVideoTime = videoEl.currentTime + (nbFrames/videoFPS);
-        // No negative
-        newVideoTime = newVideoTime < 0 ? 0 : newVideoTime;
-        // Ceil to the 5th decimal point, to be sure it goes to the next frame instead of hovering between 2 frames
-        newVideoTime = this.getFrameHalfTime(newVideoTime);
-        videoEl.currentTime = newVideoTime;
+        return videoEl.currentTime + (nbFrames/videoFPS);
     }
+
+    return 0;
 };
 
 /**
@@ -120,12 +124,20 @@ EAtlasNcAnimate2Widget.prototype.skipFrame = function(nbFrames) {
  * This is used to be sure a seek will seek to the expected frame.
  * It's to get around floating point error.
  */
-EAtlasNcAnimate2Widget.prototype.getFrameHalfTime = function(videoTime) {
-    const videoFPS = this.video_metadata["fps"];
-    // Current frame number, first frame = 0
-    const videoFrameNumber = Math.floor(videoTime * videoFPS);
+EAtlasNcAnimate2Widget.prototype.fixVideoFrameTime = function(videoTime) {
+    if (this.videoContainerVideo && this.videoContainerVideo[0]) {
+        const videoEl = this.videoContainerVideo[0];
+        const videoFPS = this.video_metadata["fps"];
+        // Current frame number, first frame = 0
+        const videoFrameNumber = Math.floor(videoTime * videoFPS);
+        let fixVideoTime = (videoFrameNumber + 0.5) / videoFPS;
 
-    return (videoFrameNumber + 0.5) / videoFPS;
+        if (fixVideoTime > videoEl.duration) {
+            fixVideoTime = videoEl.duration - (0.5/videoFPS);
+        }
+        // No negative
+        return fixVideoTime < 0 ? 0 : fixVideoTime;
+    }
 };
 
 EAtlasNcAnimate2Widget.prototype.init = function() {
@@ -751,7 +763,9 @@ EAtlasNcAnimate2Widget.prototype.initElevationSelector = function() {
 };
 
 EAtlasNcAnimate2Widget.prototype.changeFramePeriod = function(framePeriod) {
-    if (framePeriod in this.media_map) {
+    if (this.media_map && framePeriod &&
+            (framePeriod in this.media_map)) {
+
         // Select tab (visually)
         this.tabsContainerUl.find('li').removeClass('active');
         this.tabsContainerUl.find('li.' + framePeriod).addClass('active');
@@ -759,7 +773,10 @@ EAtlasNcAnimate2Widget.prototype.changeFramePeriod = function(framePeriod) {
 };
 
 EAtlasNcAnimate2Widget.prototype.changeElevation = function(elevation) {
-    if (elevation in this.media_map[this.current_framePeriod]) {
+    if (this.media_map && this.current_framePeriod &&
+            (this.current_framePeriod in this.media_map) &&
+            (elevation in this.media_map[this.current_framePeriod])) {
+
         this.elevationContainerSelect.val(elevation);
     }
 };
@@ -1130,46 +1147,48 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
             that.downloadContainerList.append('<li class="'+key+'"><a href="'+url+'" title="'+title+'" download="'+filename+'">'+label+'</a></li>');
         });
 
-        const frameLink = jQuery('<a>Frame</a>');
-        frameLink.click(function(widget) {
-            return function(event) {
-                // Map:
-                //     Key: Possible values found in JSON (returned by NcAnimate)
-                //     Value: Equivalence in Moment library
-                // https://momentjs.com/docs/#/manipulating/add/
-                const MOMENT_UNIT_MAP = {
-                    "SECOND": "seconds",
-                    "MINUTE": "minutes",
-                    "HOUR": "hours",
-                    "DAY": "days",
-                    "WEEK": "weeks",
-                    "MONTH": "months",
-                    "YEAR": "years"
-                };
+        if (this.isDownloadFrameEnabled()) {
+            const frameLink = jQuery('<a>Video Frame</a>');
+            frameLink.click(function(widget) {
+                return function(event) {
+                    // Map:
+                    //     Key: Possible values found in JSON (returned by NcAnimate)
+                    //     Value: Equivalence in Moment library
+                    // https://momentjs.com/docs/#/manipulating/add/
+                    const MOMENT_UNIT_MAP = {
+                        "SECOND": "seconds",
+                        "MINUTE": "minutes",
+                        "HOUR": "hours",
+                        "DAY": "days",
+                        "WEEK": "weeks",
+                        "MONTH": "months",
+                        "YEAR": "years"
+                    };
 
 
-                const video = widget.videoContainerVideo;
-                const currentTime = video[0].currentTime;
-                const videoFPS = widget.video_metadata["fps"];
-                // Current frame number, first frame = 0
-                const currentFrameNumber = Math.floor(currentTime * videoFPS);
+                    const video = widget.videoContainerVideo;
+                    const currentTime = widget.fixVideoFrameTime(video[0].currentTime);
+                    const videoFPS = widget.video_metadata["fps"];
+                    // Current frame number, first frame = 0
+                    const currentFrameNumber = Math.floor(currentTime * videoFPS);
 
-                const frameTime = widget.media_metadata["frameTimeIncrement"];
-                const dateRange = widget.media_metadata["dateRange"];
-                const startDateStr = dateRange["startDate"];
-                const startDate = widget.parseDate(startDateStr);
+                    const frameTime = widget.media_metadata["frameTimeIncrement"];
+                    const dateRange = widget.media_metadata["dateRange"];
+                    const startDateStr = dateRange["startDate"];
+                    const startDate = widget.parseDate(startDateStr);
 
-                const frameTimeIncrement = frameTime["increment"] * currentFrameNumber;
-                const frameTimeUnit = frameTime["unit"];
-                const momentFrameTimeUnit = MOMENT_UNIT_MAP[frameTimeUnit];
-                const frameDate = startDate.add(frameTimeIncrement, momentFrameTimeUnit);
+                    const frameTimeIncrement = frameTime["increment"] * currentFrameNumber;
+                    const frameTimeUnit = frameTime["unit"];
+                    const momentFrameTimeUnit = MOMENT_UNIT_MAP[frameTimeUnit];
+                    const frameDate = startDate.add(frameTimeIncrement, momentFrameTimeUnit);
 
-                alert("TODO\nSend a request to the server to get frame: " + frameDate.format());
-            }
-        }(this));
-        const frameLi = jQuery('<li class="frame"></li>');
-        frameLi.append(frameLink);
-        this.downloadContainerList.append(frameLi);
+                    widget.downloadFrame(frameDate);
+                }
+            }(this));
+            const frameLi = jQuery('<li class="frame"></li>');
+            frameLi.append(frameLink);
+            this.downloadContainerList.append(frameLi);
+        }
 
         // Show the downloads
         this.downloadContainer.show();
@@ -1178,6 +1197,40 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
         // NOTE: This will only happen when there is no media at all.
         this.downloadContainer.hide();
     }
+};
+
+EAtlasNcAnimate2Widget.prototype.downloadFrame = function(frameDate) {
+    // 1. Create URL to the frame like this one
+    // https://aims-ereefs-public-test.s3-ap-southeast-2.amazonaws.com/ncanimate/frames/products__ncanimate__ereefs__gbr4_v2__temp-wind-salt-current_hourly/hervey-bay-3/height_-1.5/frame_2010-09-01_00h00.png
+    if (!this.media_metadata["frameDirectoryUrl"]) {
+        return null;
+    }
+
+    let frameUrl = this.media_metadata["frameDirectoryUrl"];
+    if (!frameUrl.endsWith("/")) {
+        frameUrl += "/";
+    }
+
+    // Add filename
+    // example: frame_2010-09-01_00h00.png
+    const filename = "frame_" + frameDate.format("YYYY-MM-DD_HH[h]mm") + ".png"
+    frameUrl += filename
+
+    // 2. Trigger a download
+
+    // Create a link to the CSV and put it in the page markup
+    let link = jQuery('<a href="' + encodeURI(frameUrl) + '" download="' + filename + '" target="_blank"></a>');
+    jQuery("body").append(link);
+
+    // Simulate a click on the link to trigger the file download
+    link[0].click();
+
+    // Remove the link from the page
+    link.remove();
+};
+
+EAtlasNcAnimate2Widget.prototype.isDownloadFrameEnabled = function() {
+    return this.media_metadata["frameDirectoryUrl"] !== undefined && this.media_metadata["frameDirectoryUrl"] !== null;
 };
 
 EAtlasNcAnimate2Widget.prototype.warning = function(message) {
