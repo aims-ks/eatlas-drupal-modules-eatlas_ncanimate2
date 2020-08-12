@@ -79,6 +79,10 @@
     line-height: normal;
 }
 
+.eatlas_ncanimate2_block .message-container .text .details {
+    font-size: 0.5em;
+}
+
 .eatlas_ncanimate2_block .video-container,
 .eatlas_ncanimate2_block .image-container {
     /* Fix issue with container larger then expected */
