@@ -52,8 +52,72 @@ function eatlas_ncanimate2_menu() {
         'file' => 'eatlas_ncanimate2.admin.inc'
     );
 
+    // Reverse proxy
+    $items['module/eatlas/eatlas_ncanimate2/proxy'] = array(
+        'page callback' => '_eatlas_ncanimate2_proxy', // Name of the function to call
+        'access arguments' => TRUE
+    );
+
     return $items;
 }
+
+// Reverse proxy used to get block data
+function _eatlas_ncanimate2_proxy() {
+    $params = drupal_get_query_parameters();
+    $bid = $params["bid"];
+    $block_name = $params["name"];
+
+    if ($bid !== null) {
+        $block = eatlas_ncanimate2_block_load($bid);
+        if (!$block) {
+            $content = '{"error": "Invalid block ID: ' . $bid . '"}';
+            $http_code = 500;
+        }
+    } else if ($block_name !== null) {
+        $block = eatlas_ncanimate2_block_load_by_name($block_name);
+        if (!$block) {
+            $content = '{"error": "Invalid block name: ' . $block_name . '"}';
+            $http_code = 500;
+        }
+    } else {
+        $content = '{"error": "Missing parameter \"bid\" or \"name\""}';
+        $http_code = 500;
+    }
+
+    if ($block) {
+        $rawUrl = $block->serviceurl;
+        $productId = $block->productid;
+
+        // Replace placeholders ${productid}
+        $url = str_replace('${productid}', $productId, $rawUrl);
+
+        $curl = curl_init($url);
+        curl_setopt($curl, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        // Connection timeout to 30 sec (the remote server is too slow)
+        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 30);
+        // Request timeout (Drupal is too slow)
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
+        curl_setopt($curl,CURLOPT_ENCODING , "gzip");
+
+        $content = curl_exec($curl);
+
+        // First line: http code
+        $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if ($http_code === 0) {
+            $http_code = 404;
+        }
+
+        curl_close($curl);
+    }
+
+    // https://www.php.net/manual/en/function.header.php
+    header("Content-type: application/json", true, $http_code);
+    print($content);
+}
+
+
+
 
 /**
  * Implements: hook_block_info().
@@ -92,8 +156,8 @@ function eatlas_ncanimate2_block_view($delta = '') {
             drupal_add_js($module_path . '/js/EAtlasNcAnimate2Map.js');
             drupal_add_js($module_path . '/js/eatlas_ncanimate2_load_videos.js');
 
-            $serviceUrl = check_plain($block_info->serviceurl);
             $productId = check_plain($block_info->productid);
+            $blockName = check_plain($block_info->name);
             $mapUrl = check_plain($block_info->mapurl);
             $mapWidth = check_plain($block_info->mapwidth);
             $mapHeight = check_plain($block_info->mapheight);
@@ -115,7 +179,7 @@ function eatlas_ncanimate2_block_view($delta = '') {
             // The block do not need a subject (title)
             // $block['subject'] = t('NcAnimate 2 block');
             $block['content'] =
-                '<div class="eatlas_ncanimate2_block" serviceurl="' . $serviceUrl . '" productid="' . $productId . '">' .
+                '<div class="eatlas_ncanimate2_block" productid="' . $productId . '" blockname="' . $blockName . '">' .
                     '<div class="tabs">' .
                         '<span class="label">Time step:</span>' .
                         '<ul></ul>' .
@@ -208,6 +272,24 @@ function eatlas_ncanimate2_block_load($bid) {
     $query = db_select('eatlas_ncanimate2', 's')
         ->fields('s')
         ->condition('s.bid', $bid, '=');
+    $result = $query->execute();
+
+    return $result->fetch();
+}
+
+function eatlas_ncanimate2_block_load_by_name($block_name) {
+    if ($block_name === NULL) {
+        return NULL;
+    }
+
+    // DB Select using the Drupal objects
+    // https://api.drupal.org/api/drupal/includes!database!database.inc/function/db_select/7
+    // NOTE: Join do not return a query!
+    //     https://api.drupal.org/api/drupal/includes%21database%21select.inc/function/SelectQuery%3A%3Ajoin/7
+
+    $query = db_select('eatlas_ncanimate2', 's')
+        ->fields('s')
+        ->condition('s.name', $block_name, '=');
     $result = $query->execute();
 
     return $result->fetch();

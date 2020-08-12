@@ -263,7 +263,7 @@ EAtlasNcAnimate2Widget.prototype.showMessage = function(message, width, height) 
     this.imageContainer.hide();
     this.videoContainer.hide();
 
-    this.messageContainerText.text(message);
+    this.messageContainerText.html(message);
 };
 
 /**
@@ -822,19 +822,16 @@ EAtlasNcAnimate2Widget.prototype.changeRegion = function(region) {
 };
 
 EAtlasNcAnimate2Widget.prototype.load = function() {
-    // Send a JSONP query to the server
-    //$.getJSON("http://aims.ereefs.org.au/videos.php?id=temperature-wind-salinity&region="+region+"&callback=?", function(data) {
-    var serviceUrl = this.block.attr('serviceurl');
     var productId = this.block.attr('productid');
+    var blockName = this.block.attr('blockname');
 
-    // Replace placeholders ${productid}
-    serviceUrl = serviceUrl.replace("${productid}", productId);
-
+    // JQuery can request JSON data over different domain (CORS)
     // JQuery doesn't handle error with JSONP
     //   http://designwithpc.com/post/11989720389/jsonp-error-handling-with-jqueryajax
+    // Solution:
+    //   Use reverse proxy
     jQuery.ajax({
-        url: serviceUrl + "?callback=?",
-        dataType: "jsonp",
+        url: "/module/eatlas/eatlas_ncanimate2/proxy?name=" + blockName,
 
         // 10 seconds timeout
         // NOTE: Despite what the JQuery API doc says, the "timeout" option
@@ -1042,8 +1039,27 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
 
         // NOTE: "error" is ignored with JSONP, JQuery 1.4.4
         error: (function(that) {
-            return function(data, status, xhr) {
-                that.showMessage("Error occurred while loading the data.");
+            return function(xhr, textStatus, errorThrown) {
+                statusCode = xhr.status;
+                responseText = xhr.responseText;
+                errorMessage = null;
+                if (JSON) {
+                    jsonResponse = JSON.parse(responseText);
+                    errorMessage = jsonResponse.error;
+                }
+                if (!errorMessage) {
+                    // Fallback for very old browsers... and stubborn Internet Explorer
+                    errorMessage = responseText;
+                }
+
+                that.showMessage(
+                    "Error occurred while loading the data.<br/>" +
+                    "<span class=\"details\">" +
+                    "Block name: " + blockName + "<br/>" +
+                    "Product ID: " + productId + "<br/>" +
+                    statusCode + ": " + errorMessage +
+                    "</span>"
+                );
             }
         })(this)
     });
