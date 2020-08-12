@@ -55,7 +55,7 @@ function eatlas_ncanimate2_menu() {
     // Reverse proxy
     $items['module/eatlas/eatlas_ncanimate2/proxy'] = array(
         'page callback' => '_eatlas_ncanimate2_proxy', // Name of the function to call
-        'access arguments' => TRUE
+        'access callback' => TRUE
     );
 
     return $items;
