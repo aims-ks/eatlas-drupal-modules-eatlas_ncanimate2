@@ -2,30 +2,32 @@ var EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT = 800;
 
 // Utility (static) function
 function eatlas_ncanimate2_resize_videos(videos) {
-    (function ($) {
-        videos.each(function(index) {
-            // Original size: $(this).get(0).width, $(this).get(0).height
-            // Current size: $(this).width(), $(this).height()
-            // NOTE:
-            //   $(this) = The eReefs video for "index".
-            //   $(this).get(0) = The video attributes.
-            //   $(this).get(index) does not make any sense since $(this) is the element for "index".
-            var orig_width = $(this).get(0).width,
-                orig_height = $(this).get(0).height,
-                current_width = $(this).width(),
-                current_height = $(this).height();
+    if (videos) {
+        (function ($) {
+            videos.each(function(index) {
+                // Original size: $(this).get(0).width, $(this).get(0).height
+                // Current size: $(this).width(), $(this).height()
+                // NOTE:
+                //   $(this) = The eReefs video for "index".
+                //   $(this).get(0) = The video attributes.
+                //   $(this).get(index) does not make any sense since $(this) is the element for "index".
+                var orig_width = $(this).get(0).width,
+                    orig_height = $(this).get(0).height,
+                    current_width = $(this).width(),
+                    current_height = $(this).height();
 
-            if (current_width && orig_width && orig_height) {
-                current_height = Math.round(current_width * orig_height / orig_width);
-                if (current_height > EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT) {
-                    current_height = EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT;
-                    current_width = Math.round(current_height * orig_width / orig_height);
-                    $(this).width(current_width);
+                if (current_width && orig_width && orig_height) {
+                    current_height = Math.round(current_width * orig_height / orig_width);
+                    if (current_height > EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT) {
+                        current_height = EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT;
+                        current_width = Math.round(current_height * orig_width / orig_height);
+                        $(this).width(current_width);
+                    }
+                    $(this).height(current_height);
                 }
-                $(this).height(current_height);
-            }
-        });
-    }(jQuery));
+            });
+        }(jQuery));
+    }
 }
 
 function eatlas_ncanimate2_numeric_sort_asc(a, b) {
@@ -68,21 +70,39 @@ function EAtlasNcAnimate2Widget(htmlBlockElement) {
     this.videoContainer = this.block.find('.video-container');
     this.videoContainerVideo = this.videoContainer.find('video');
 
-    this.videoContainerVideo.bind("pause", function(widget) {
-        return function(event) {
-            // Sync video player with JavaScript current time value.
-            // When the video is paused, the currentTime property stop incrementing,
-            //     but sometime the video skip ahead a frame or two.
-            //     Setting the currentTime property fixes that issue.
-            //     Also, when the currentTime is set too close to the
-            //     timestamp between 2 frames, the rounding from the Math
-            //     may give a different frame than the one shown.
-            //     To avoid any issue, we set the video currentTime
-            //     right in the middle of 2 frames, which ensure the
-            //     reading will always be consistent with what the user sees.
-            widget.setVideoCurrentTime(widget.fixVideoFrameTime(widget.videoContainerVideo[0].currentTime));
-        };
-    }(this));
+    if (!this.videoContainerVideo || !this.videoContainerVideo[0]) {
+        // There is no video container
+        this.videoContainerVideo = null;
+    } else if (!this.videoContainerVideo[0].load) {
+        // There is a video container, but somehow it's not working?
+        // Display an error message and disable video playback.
+        this.videoContainerVideo = null;
+
+        this.showMessage(
+            "Error occurred while loading the video.<br/>" +
+            "<span class=\"details\">" +
+            "Details: Your browser do not support video.load" +
+            "</span>"
+        );
+    }
+
+    if (this.videoContainerVideo) {
+        this.videoContainerVideo.bind("pause", function(widget) {
+            return function(event) {
+                // Sync video player with JavaScript current time value.
+                // When the video is paused, the currentTime property stop incrementing,
+                //     but sometime the video skip ahead a frame or two.
+                //     Setting the currentTime property fixes that issue.
+                //     Also, when the currentTime is set too close to the
+                //     timestamp between 2 frames, the rounding from the Math
+                //     may give a different frame than the one shown.
+                //     To avoid any issue, we set the video currentTime
+                //     right in the middle of 2 frames, which ensure the
+                //     reading will always be consistent with what the user sees.
+                widget.setVideoCurrentTime(widget.fixVideoFrameTime(widget.videoContainerVideo[0].currentTime));
+            };
+        }(this));
+    }
 
     this.elevationContainer = this.block.find('.elevation');
     this.elevationContainerSelect = this.elevationContainer.find('select');
@@ -118,7 +138,7 @@ EAtlasNcAnimate2Widget.prototype.isMsEdge = function() {
  * unless some masochist user decide to give it a try with Internet Explorer or Ms Edge
  */
 EAtlasNcAnimate2Widget.prototype.setVideoCurrentTime = function(currentTime) {
-    if (this.videoContainerVideo && this.videoContainerVideo[0]) {
+    if (this.videoContainerVideo) {
         // NOTE: That's all we need to do... for all browsers but Internet Explorer
         this.videoContainerVideo[0].currentTime = currentTime;
 
@@ -138,11 +158,11 @@ EAtlasNcAnimate2Widget.prototype.skipFrame = function(nbFrames) {
 };
 
 EAtlasNcAnimate2Widget.prototype.getSkipFrame = function(nbFrames) {
-    if (this.videoContainerVideo && this.videoContainerVideo[0]) {
-        const videoEl = this.videoContainerVideo[0];
+    if (this.videoContainerVideo) {
+        var videoEl = this.videoContainerVideo[0];
         videoEl.pause();
 
-        const videoFPS = this.video_metadata["fps"];
+        var videoFPS = this.video_metadata["fps"];
         return videoEl.currentTime + (nbFrames/videoFPS);
     }
 
@@ -159,12 +179,12 @@ EAtlasNcAnimate2Widget.prototype.getSkipFrame = function(nbFrames) {
  * It's to get around floating point error.
  */
 EAtlasNcAnimate2Widget.prototype.fixVideoFrameTime = function(videoTime) {
-    if (this.videoContainerVideo && this.videoContainerVideo[0]) {
-        const videoEl = this.videoContainerVideo[0];
-        const videoFPS = this.video_metadata["fps"];
+    if (this.videoContainerVideo) {
+        var videoEl = this.videoContainerVideo[0];
+        var videoFPS = this.video_metadata["fps"];
         // Current frame number, first frame = 0
-        const videoFrameNumber = Math.floor(videoTime * videoFPS);
-        let fixVideoTime = (videoFrameNumber + 0.5) / videoFPS;
+        var videoFrameNumber = Math.floor(videoTime * videoFPS);
+        var fixVideoTime = (videoFrameNumber + 0.5) / videoFPS;
 
         if (fixVideoTime > videoEl.duration) {
             fixVideoTime = videoEl.duration - (0.5/videoFPS);
@@ -384,84 +404,86 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
                 });
 
                 if ("MP4" in videos_metadata) {
-                    this.navigation.show();
+                    if (this.videoContainerVideo) {
+                        this.navigation.show();
 
-                    this.video_metadata = videos_metadata["MP4"];
-                    var videoUrl = videos_metadata["MP4"]["fileURI"] + "?t=" + lastModified;
-                    var videoPreview = null;
-                    if ("preview" in media_metadata) {
-                        videoPreview = media_metadata["preview"] + "?t=" + lastModified;
-                    }
-
-                    var videoSource = this.videoContainerVideo.find('.video_mp4');
-
-                    var width = videos_metadata["MP4"]["width"];
-                    var height = videos_metadata["MP4"]["height"];
-                    if (width && height) {
-                        if (height > EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT) {
-                            width = Math.round(width * EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT / height);
-                            height = EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT;
+                        this.video_metadata = videos_metadata["MP4"];
+                        var videoUrl = videos_metadata["MP4"]["fileURI"] + "?t=" + lastModified;
+                        var videoPreview = null;
+                        if ("preview" in media_metadata) {
+                            videoPreview = media_metadata["preview"] + "?t=" + lastModified;
                         }
 
-                        // The video preview will be loaded in the image container (it's easier to catch events on an img tag)
-                        this.imageContainerImg.width(width);
-                        this.imageContainerImg.height(height);
+                        var videoSource = this.videoContainerVideo.find('.video_mp4');
 
-                        this.videoContainerVideo.attr('width', width);
-                        this.videoContainerVideo.attr('height', height);
-                    }
+                        var width = videos_metadata["MP4"]["width"];
+                        var height = videos_metadata["MP4"]["height"];
+                        if (width && height) {
+                            if (height > EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT) {
+                                width = Math.round(width * EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT / height);
+                                height = EATLAS_NCANIMATE2_MEDIA_MAX_HEIGHT;
+                            }
 
-                    if (videoPreview) {
-                        // Set video preview image (poster)
-                        this.videoContainerVideo.attr('poster', videoPreview);
+                            // The video preview will be loaded in the image container (it's easier to catch events on an img tag)
+                            this.imageContainerImg.width(width);
+                            this.imageContainerImg.height(height);
 
-                        // Put the video preview in the image container to be able to check when it's loaded.
-                        this.imageContainerImg.attr('src', videoPreview);
+                            this.videoContainerVideo.attr('width', width);
+                            this.videoContainerVideo.attr('height', height);
+                        }
 
-                        // Wait a 1/10 of a second before checking if the image is loaded.
-                        // NOTE: Some browser will report the image as been "not completed"
-                        //   immediately after setting it, even when it's in the cache,
-                        //   causing a flickering effect when switching videos.
-                        //   Waiting a small delay seems to fix that issue.
-                        var previewLoader = window.setTimeout(
-                            (function(that) {
-                                return function() {
-                                    if (that.imageIsLoaded(that.imageContainerImg)) {
+                        if (videoPreview) {
+                            // Set video preview image (poster)
+                            this.videoContainerVideo.attr('poster', videoPreview);
+
+                            // Put the video preview in the image container to be able to check when it's loaded.
+                            this.imageContainerImg.attr('src', videoPreview);
+
+                            // Wait a 1/10 of a second before checking if the image is loaded.
+                            // NOTE: Some browser will report the image as been "not completed"
+                            //   immediately after setting it, even when it's in the cache,
+                            //   causing a flickering effect when switching videos.
+                            //   Waiting a small delay seems to fix that issue.
+                            var previewLoader = window.setTimeout(
+                                (function(that) {
+                                    return function() {
+                                        if (that.imageIsLoaded(that.imageContainerImg)) {
+                                            that.showVideoContainer();
+                                        } else {
+                                            that.showMessage("Loading...", width, height);
+                                            that.imageContainerImg.load(
+                                                (function(that) {
+                                                    return function() {
+                                                        that.showVideoContainer();
+                                                    }
+                                                })(that)
+                                            );
+                                        }
+                                    };
+                                })(this),
+                                100
+                            );
+
+                            // If the preview image is not found, show to the video player anyway.
+                            this.imageContainerImg.error(
+                                (function(that, previewLoader) {
+                                    return function() {
+                                        window.clearTimeout(previewLoader);
                                         that.showVideoContainer();
-                                    } else {
-                                        that.showMessage("Loading...", width, height);
-                                        that.imageContainerImg.load(
-                                            (function(that) {
-                                                return function() {
-                                                    that.showVideoContainer();
-                                                }
-                                            })(that)
-                                        );
                                     }
-                                };
-                            })(this),
-                            100
-                        );
+                                })(this, previewLoader)
+                            );
 
-                        // If the preview image is not found, show to the video player anyway.
-                        this.imageContainerImg.error(
-                            (function(that, previewLoader) {
-                                return function() {
-                                    window.clearTimeout(previewLoader);
-                                    that.showVideoContainer();
-                                }
-                            })(this, previewLoader)
-                        );
+                        } else {
+                            this.videoContainerVideo.removeAttr('poster');
 
-                    } else {
-                        this.videoContainerVideo.removeAttr('poster');
+                            // There is no video preview. Show the video player now.
+                            this.showVideoContainer();
+                        }
 
-                        // There is no video preview. Show the video player now.
-                        this.showVideoContainer();
+                        videoSource.attr('src', videoUrl);
+                        this.videoContainerVideo[0].load();
                     }
-
-                    videoSource.attr('src', videoUrl);
-                    this.videoContainerVideo[0].load();
 
                 } else if ("PNG" in images_metadata) {
                     var imageUrl = images_metadata["PNG"]["fileURI"] + "?t=" + lastModified;
@@ -832,6 +854,7 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
     //   Use reverse proxy
     jQuery.ajax({
         url: "/module/eatlas/eatlas_ncanimate2/proxy?name=" + blockName,
+        dataType: "json",
 
         // 10 seconds timeout
         // NOTE: Despite what the JQuery API doc says, the "timeout" option
@@ -848,8 +871,8 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
 
                 that.regions = {};
 
-                // NOTE: mediaID is just it's index in the JSONArray
-                jQuery.each(data, function(mediaID, mediaMetadata) {
+                // NOTE: mediaIndex is just its index in the JSONArray
+                jQuery.each(data, function(mediaIndex, mediaMetadata) {
                     var dateRange = mediaMetadata['dateRange'];
                     var startDateStr = null;
                     var endDateStr = null;
@@ -993,16 +1016,16 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
                 // Determine what the default region should be
                 that.default_region = null;
                 if (that.regions) {
-                    const regionObjs = that.objectValues(that.regions)
+                    var regionObjs = that.objectValues(that.regions)
                     if (regionObjs && regionObjs.length > 0) {
                         // Order regions by scale
                         // If 2 regions have the same scale, order them by label
                         regionObjs.sort(function(regionA, regionB){
-                            let scaleA = regionA.scale || null;
-                            let scaleB = regionB.scale || null;
+                            var scaleA = regionA.scale || null;
+                            var scaleB = regionB.scale || null;
 
                             if (scaleA !== null && scaleB !== null) {
-                                let scaleDiff = scaleA - scaleB;
+                                var scaleDiff = scaleA - scaleB;
                                 if (scaleDiff !== 0) {
                                     return scaleDiff;
                                 }
@@ -1018,7 +1041,7 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
                             return regionA.label.localeCompare(regionB.label);
                         });
                         // Use the first region (after sorting) as default region
-                        const default_region_obj = regionObjs[0];
+                        var default_region_obj = regionObjs[0];
 
                         // Only the ID is stored.
                         // NOTE: This is used when there is no region in URL parameter, or the region in URL is wrong.
@@ -1198,14 +1221,14 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
         });
 
         if (this.isDownloadFrameEnabled()) {
-            const frameLink = jQuery('<a>Video Frame</a>');
+            var frameLink = jQuery('<a>Video Frame</a>');
             frameLink.click(function(widget) {
                 return function(event) {
                     // Map:
                     //     Key: Possible values found in JSON (returned by NcAnimate)
                     //     Value: Equivalence in Moment library
                     // https://momentjs.com/docs/#/manipulating/add/
-                    const MOMENT_UNIT_MAP = {
+                    var MOMENT_UNIT_MAP = {
                         "SECOND": "seconds",
                         "MINUTE": "minutes",
                         "HOUR": "hours",
@@ -1215,27 +1238,27 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
                         "YEAR": "years"
                     };
 
-                    const video = widget.videoContainerVideo;
+                    var video = widget.videoContainerVideo;
                     video[0].pause();
-                    const currentTime = widget.fixVideoFrameTime(video[0].currentTime);
-                    const videoFPS = widget.video_metadata["fps"];
+                    var currentTime = widget.fixVideoFrameTime(video[0].currentTime);
+                    var videoFPS = widget.video_metadata["fps"];
                     // Current frame number, first frame = 0
-                    const currentFrameNumber = Math.floor(currentTime * videoFPS);
+                    var currentFrameNumber = Math.floor(currentTime * videoFPS);
 
-                    const frameTime = widget.media_metadata["frameTimeIncrement"];
-                    const dateRange = widget.media_metadata["dateRange"];
-                    const startDateStr = dateRange["startDate"];
-                    const startDate = widget.parseDate(startDateStr);
+                    var frameTime = widget.media_metadata["frameTimeIncrement"];
+                    var dateRange = widget.media_metadata["dateRange"];
+                    var startDateStr = dateRange["startDate"];
+                    var startDate = widget.parseDate(startDateStr);
 
-                    const frameTimeIncrement = frameTime["increment"] * currentFrameNumber;
-                    const frameTimeUnit = frameTime["unit"];
-                    const momentFrameTimeUnit = MOMENT_UNIT_MAP[frameTimeUnit];
-                    const frameDate = startDate.add(frameTimeIncrement, momentFrameTimeUnit);
+                    var frameTimeIncrement = frameTime["increment"] * currentFrameNumber;
+                    var frameTimeUnit = frameTime["unit"];
+                    var momentFrameTimeUnit = MOMENT_UNIT_MAP[frameTimeUnit];
+                    var frameDate = startDate.add(frameTimeIncrement, momentFrameTimeUnit);
 
-                    widget.downloadFrame(frameDate);
+                    widget.downloadFrame(frameDate, frameTimeUnit);
                 }
             }(this));
-            const frameLi = jQuery('<li class="frame"></li>');
+            var frameLi = jQuery('<li class="frame"></li>');
             frameLi.append(frameLink);
             this.downloadContainerList.append(frameLi);
         }
@@ -1249,38 +1272,62 @@ EAtlasNcAnimate2Widget.prototype.loadDownloads = function(media_metadata) {
     }
 };
 
-EAtlasNcAnimate2Widget.prototype.downloadFrame = function(frameDate) {
+EAtlasNcAnimate2Widget.prototype.downloadFrame = function(frameDate, frameTimeUnit) {
     // 1. Create URL to the frame like this one
     // https://aims-ereefs-public-test.s3-ap-southeast-2.amazonaws.com/ncanimate/frames/products__ncanimate__ereefs__gbr4_v2__temp-wind-salt-current_hourly/hervey-bay-3/height_-1.5/frame_2010-09-01_00h00.png
     if (!this.media_metadata["frameDirectoryUrl"]) {
         return null;
     }
 
-    let frameUrl = this.media_metadata["frameDirectoryUrl"];
+    var frameUrl = this.media_metadata["frameDirectoryUrl"];
     if (!this.endsWith(frameUrl, "/")) {
         frameUrl += "/";
     }
 
     // Add filename
     // example: frame_2010-09-01_00h00.png
-    const filename = "frame_" + frameDate.format("YYYY-MM-DD_HH[h]mm") + ".png"
-    frameUrl += filename
+    var filename = null;
+    switch (frameTimeUnit) {
+        case "MINUTE":
+        case "HOUR":
+            filename = "frame_" + frameDate.format("YYYY-MM-DD_HH[h]mm") + ".png"
+            break;
 
-    // 2. Trigger a download
+        case "DAY":
+            filename = "frame_" + frameDate.format("YYYY-MM-DD") + ".png"
+            break;
 
-    // Create a link to the CSV and put it in the page markup
-    let link = jQuery('<a href="' + encodeURI(frameUrl) + '" download="' + filename + '" target="_blank"></a>');
-    jQuery("body").append(link);
+        case "MONTH":
+            filename = "frame_" + frameDate.format("YYYY-MM") + ".png"
+            break;
 
-    // Simulate a click on the link to trigger the file download
-    link[0].click();
+        case "YEAR":
+            filename = "frame_" + frameDate.format("YYYY") + ".png"
+            break;
+    }
 
-    // Remove the link from the page
-    link.remove();
+    if (filename === null) {
+        // This should only happen if the frameTimeUnit is not one listed above (very unlikely)
+        alert("ERROR: Frame can not be downloaded.\nReason: Unsupported frame time unit: " + frameTimeUnit + ".");
+    } else {
+        frameUrl += filename
+
+        // 2. Trigger a download
+
+        // Create a link to the CSV and put it in the page markup
+        var link = jQuery('<a href="' + encodeURI(frameUrl) + '" download="' + filename + '" target="_blank"></a>');
+        jQuery("body").append(link);
+
+        // Simulate a click on the link to trigger the file download
+        link[0].click();
+
+        // Remove the link from the page
+        link.remove();
+    }
 };
 
 EAtlasNcAnimate2Widget.prototype.isDownloadFrameEnabled = function() {
-    return this.media_metadata["frameDirectoryUrl"] !== undefined && this.media_metadata["frameDirectoryUrl"] !== null;
+    return this.videoContainerVideo && this.media_metadata["frameDirectoryUrl"] !== undefined && this.media_metadata["frameDirectoryUrl"] !== null;
 };
 
 EAtlasNcAnimate2Widget.prototype.warning = function(message) {
