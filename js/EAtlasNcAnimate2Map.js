@@ -30,7 +30,10 @@ EAtlasNcAnimate2Map.prototype.load = function(regionCatalogue) {
     this.regionCatalogue = regionCatalogue;
     this.canvas = this.blk.find('.regionCanvas');
     this.htmlRegionList = this.blk.find('.regionList');
-    this.context = this.canvas.get(0).getContext('2d');
+    this.context = null;
+    if (this.canvas && this.canvas.get(0) && this.canvas.get(0).getContext) {
+        this.context = this.canvas.get(0).getContext('2d');
+    }
 
     var mapUrl = this.getMapURL();
     if (mapUrl) {
@@ -59,8 +62,10 @@ EAtlasNcAnimate2Map.prototype.loadMap = function() {
         height = this.getMapHeight();
 
     // Resize the canvas to match the image size (without stretching it)
-    this.context.canvas.width = width;
-    this.context.canvas.height = height;
+    if (this.context) {
+        this.context.canvas.width = width;
+        this.context.canvas.height = height;
+    }
 
     this.loadRegionCache();
     this.populateHTMLRegionList();
@@ -76,7 +81,7 @@ EAtlasNcAnimate2Map.prototype.loadMap = function() {
             if (hoverRegion !== that.hoverRegion) {
                 // Focusing on the text trigger the highlight on the corresponding map region
                 if (hoverRegion) {
-                    let x = window.scrollX, y = window.scrollY;
+                    var x = window.scrollX, y = window.scrollY;
                     that.htmlRegionList.find("a." + hoverRegion).focus();
 
                     // Reset the page scroll to prevent "focus" from scrolling the page
@@ -467,20 +472,22 @@ EAtlasNcAnimate2Map.prototype.redraw = function() {
         height = this.getMapHeight();
 
     // Flush canvas before redrawing
-    this.context.clearRect(0, 0, width, height);
+    if (this.context) {
+        this.context.clearRect(0, 0, width, height);
 
-    // Draw the image
-    if (this.mapImg !== null) {
-        this.context.drawImage(this.mapImg, 0, 0, width, height);
-    }
+        // Draw the image
+        if (this.mapImg !== null) {
+            this.context.drawImage(this.mapImg, 0, 0, width, height);
+        }
 
-    this.context.strokeStyle = "rgba(0, 0, 0, 0.8)";
-    this.context.fillStyle = "rgba(0, 0, 255, 0.2)";
+        this.context.strokeStyle = "rgba(0, 0, 0, 0.8)";
+        this.context.fillStyle = "rgba(0, 0, 255, 0.2)";
 
-    var orderedRegions = this.getOrderedRegions();
-    if (orderedRegions) {
-        for (var i=0; i<orderedRegions.length; i++) {
-            this.drawRegion(orderedRegions[i]);
+        var orderedRegions = this.getOrderedRegions();
+        if (orderedRegions) {
+            for (var i=0; i<orderedRegions.length; i++) {
+                this.drawRegion(orderedRegions[i]);
+            }
         }
     }
 };
@@ -488,7 +495,7 @@ EAtlasNcAnimate2Map.prototype.redraw = function() {
 EAtlasNcAnimate2Map.prototype.drawRegion = function(regionId) {
     // Get the region rectangle from the cache.
     var rect = this.regionCache[regionId];
-    if (rect) {
+    if (this.context && rect) {
         if (regionId === this.selectedRegion) {
             this.context.fillRect(rect.x, rect.y, rect.width, rect.height);
         }
