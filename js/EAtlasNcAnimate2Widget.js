@@ -602,9 +602,11 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
                 alt_year = null;
                 alt_month = null;
             }
-        }
 
-        this.loadMedia(framePeriod, elevation, region, alt_year, alt_month);
+            this.loadMedia(framePeriod, elevation, region, alt_year, alt_month);
+        } else {
+            this.showMessage("Video not available.");
+        }
     }
 
     this.setTabsHref();
