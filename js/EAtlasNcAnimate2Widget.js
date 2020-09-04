@@ -605,7 +605,8 @@ EAtlasNcAnimate2Widget.prototype.loadMedia = function(framePeriod, elevation, re
 
             this.loadMedia(framePeriod, elevation, region, alt_year, alt_month);
         } else {
-            this.showMessage("Video not available.");
+            // There is no video / map available for the given framePeriod, elevation, region
+            this.showMessage("Media not available.");
         }
     }
 
