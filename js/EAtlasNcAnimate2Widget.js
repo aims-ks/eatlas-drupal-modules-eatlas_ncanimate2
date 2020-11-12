@@ -857,6 +857,9 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
     //   Use reverse proxy
     jQuery.ajax({
         url: "/module/eatlas/eatlas_ncanimate2/proxy?name=" + blockName,
+        // JQuery cache the query response but not the response code (replaced with 200),
+        // which breaks when the server returns errors.
+        cache: false,
         dataType: "json",
 
         // 10 seconds timeout
