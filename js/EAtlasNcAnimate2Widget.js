@@ -865,7 +865,7 @@ EAtlasNcAnimate2Widget.prototype.load = function() {
         // 10 seconds timeout
         // NOTE: Despite what the JQuery API doc says, the "timeout" option
         //   doesn't work with JQuery 1.4.4 (it works with 1.5+)
-        timeout: 10000,
+        timeout: 30000,
 
         success: (function(that) {
             return function(data, status, xhr) {
