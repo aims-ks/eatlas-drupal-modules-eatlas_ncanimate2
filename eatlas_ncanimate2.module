@@ -174,6 +174,7 @@ function eatlas_ncanimate2_block_view($delta = '') {
                         '<source class="video_mp4" src="" type="video/mp4" />' .
                         '<div class="no-video-support-message"><span class="text">Your browser does not support the video tag.</span></div>' .
                     '</video>' .
+                    '<div class="video-warning"><span class="warning-label">WARNING</span>: This video may contain flashing patterns which may not be suitable for people with photosensitive epilepsy.</div>' .
                 '</div>';
 
             // The block do not need a subject (title)

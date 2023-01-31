@@ -89,6 +89,14 @@
     line-height: 0;
 }
 
+.eatlas_ncanimate2_block .video-container .video-warning {
+    margin-top: 1em;
+}
+.eatlas_ncanimate2_block .video-container .video-warning .warning-label {
+    color: #990000;
+    font-weight: bold;
+}
+
 .eatlas_ncanimate2_block .playerTools {
     display: flex;
     justify-content: space-between;
