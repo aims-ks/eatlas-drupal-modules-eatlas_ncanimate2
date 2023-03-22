@@ -90,7 +90,7 @@
 }
 
 .eatlas_ncanimate2_block .video-container .video-warning {
-    margin-top: 1em;
+    line-height: normal;
 }
 .eatlas_ncanimate2_block .video-container .video-warning .warning-label {
     color: #990000;
