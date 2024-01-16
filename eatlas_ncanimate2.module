@@ -250,6 +250,15 @@ function eatlas_ncanimate2_block_view($delta = '') {
                             '</table>' .
                         '</div>' .
                     '</div>' .
+                    '<div class="note">' .
+                        '<hr/>' .
+                        '<p><strong>Note:</strong> The near-real time GBR1 and GBR4 models (including hydro, river tracer and BGC) are currently ' .
+                        'paused at December 17th 2023 due to infrastructure damage from the recent flooding events around the Daintree River region ' .
+                        '(see <a href="https://theconversation.com/north-queenslands-record-breaking-floods-are-a-frightening-portent-of-whats-to-come-under-climate-change-220039">here</a>). ' .
+                        'These floods have damaged the real-time river temperature and flow sensors across surrounding catchments, and Queensland ' .
+                        'government is working to recover and restore these as quickly as possible. We will provide further updates when available.</p>' .
+                        '<hr/>' .
+                    '</div>' .
                 '</div>' . "\n";
         }
     }
